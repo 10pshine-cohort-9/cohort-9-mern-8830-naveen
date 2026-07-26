@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: #fbf9f6;
+  color: #1f1b16;
+}
+
+.dune-bg{
+  background: linear-gradient(180deg, rgba(217,119,87,0.06) 0%, rgba(217,119,87,0.14) 100%);
+}
