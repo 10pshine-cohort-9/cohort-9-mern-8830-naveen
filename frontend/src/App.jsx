@@ -1,11 +1,28 @@
-import React from 'react';
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import NoteEditor from "./pages/NoteEditor";
+import Profile from "./pages/Profile";
+import ChangePassword from "./pages/ChangePassword";
+import NotFound from "./pages/NotFound";
 
-const App = () => (
-    <div className="flex min-h-screen items-center justify-center bg-cream">
-        <div className="rounded-xl bg-white p-8 text-center shadow-sm">
-            <h1 className="text-2xl font-semibold text-ink">Notes</h1>
-            <p className="mt-1 text-sm text-ink/50">Tailwind CSS is Working.</p>
-        </div>
-    </div>
-);
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+
+      <Route path="/notes" element={<Dashboard />} />
+      <Route path="/notes/:id" element={<NoteEditor />} />
+
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/change-password" element={<ChangePassword />} />
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
 export default App;
