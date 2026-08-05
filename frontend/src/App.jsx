@@ -15,7 +15,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
 
       <Route path="/notes" element={<Dashboard />} />
-      <Route path="/notes/:id" element={<NoteEditor />} />
+      <Route path="/editor" element={<NoteEditor />} />
 
       <Route path="/profile" element={<Profile />} />
       <Route path="/change-password" element={<ChangePassword />} />
@@ -24,5 +24,6 @@ function App() {
     </Routes>
   );
 }
+
 
 export default App;

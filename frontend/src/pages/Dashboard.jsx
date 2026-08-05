@@ -13,7 +13,7 @@ const Dashboard = () =>{
     // favourite, archived, trashed
     const [currentView] =useState('');
     const viewTitle = VIEW_TITLES[currentView] || 'All Notes';
-
+    const [activeMenu, setActiveMenu] =useState(null);
     const [notes] = useState([
         {id: 1, title:'shopping list', content:'milk, eggs, bread', isFavourite: true, isArchived: false, isTrashed: false, updatedAt: new Date()},
         {id: 2, title:'workout plan', content: 'Monday: chest, Tuesday: back, Wednesday: legs', isFavourite: false, isArchived: false, isTrashed: false, updatedAt: new Date()},
@@ -54,7 +54,7 @@ const Dashboard = () =>{
                     </div> ): (
                         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
                             {filteredNotes.map((note)=>(
-                                <NoteCard key={note.id} note={note} onOpen={handleOpenNote} onToggleFavourite={handleToggleFavourite}/>    
+                                <NoteCard key={note.id} note={note} onOpen={handleOpenNote} onToggleFavourite={handleToggleFavourite} activeMenu={activeMenu} setActiveMenu={setActiveMenu}/>    
                             ))}
                         </div>
                     )}
