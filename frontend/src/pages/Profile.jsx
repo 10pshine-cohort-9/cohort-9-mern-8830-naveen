@@ -54,6 +54,11 @@ const Profile = () => {
         setConfirmingDelete(false);
         alert('account deleted');
     };
+    const handleCancel=()=>{
+        setFullName(user.fullName);
+        setTagline(user.tagline);
+        setEditing(false);
+    };
     return(
         <div className='flex min-h-screen bg-cream'>
             <Sidebar/>
@@ -117,7 +122,7 @@ const Profile = () => {
                                     <p className='mb-3 text-sm text-red-600'>Are you sure you want to delete your account?</p>
                                     <div className='flex gap-3'>
                                         <button onClick={handleDeleteAccount} className='rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700'>Delete</button>
-                                        <button onClick={()=>setConfirmingDelete(false)} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'>Cancel</button>
+                                        <button onClick={handleCancel} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'>Cancel</button>
                                     </div>
                                 </div>
                             )}

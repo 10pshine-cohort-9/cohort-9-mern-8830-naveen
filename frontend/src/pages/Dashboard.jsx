@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Search, Plus, Lock} from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import NoteCard from '../components/NoteCard';
 const VIEW_TITLES ={
@@ -10,16 +11,38 @@ const VIEW_TITLES ={
 
 const Dashboard = () =>{
     const [search, setSearch] = useState('');
-    // favourite, archived, trashed
-    const [currentView] =useState('');
-    const viewTitle = VIEW_TITLES[currentView] || 'All Notes';
+    const [searchParams] = useSearchParams();
+    const selectedCat = searchParams.get('category');
+    let currentView ='';
+    if (searchParams.get('favourite')==='true'){
+        currentView ='favourite'
+    }
+    else if (searchParams.get('archived')==='true'){
+        currentView='archived'
+    }
+    else if(searchParams.get('trashed')==='true'){
+        currentView='trashed';
+    }
+    const viewTitle =selectedCat||VIEW_TITLES[currentView]||'All Notes'
     const [activeMenu, setActiveMenu] =useState(null);
     const [notes] = useState([
-        {id: 1, title:'shopping list', content:'milk, eggs, bread', isFavourite: true, isArchived: false, isTrashed: false, updatedAt: new Date()},
-        {id: 2, title:'workout plan', content: 'Monday: chest, Tuesday: back, Wednesday: legs', isFavourite: false, isArchived: false, isTrashed: false, updatedAt: new Date()},
-        {id: 3, title:'meeting notes', content: 'Discuss project timeline and deliverables', isFavourite: false, isArchived: true, isTrashed: false, updatedAt: new Date()},
+        {id: 1, title:'shopping list', content:'milk, eggs, bread',category: 'Personal', isFavourite: true, isArchived: false, isTrashed: false, updatedAt: new Date()},
+        {id: 2, title:'workout plan', content: 'Monday: chest, Tuesday: back, Wednesday: legs', category: 'Study',isFavourite: false, isArchived: false, isTrashed: false, updatedAt: new Date()},
+        {id: 3, title:'meeting notes', content: 'Discuss project timeline and deliverables', category:'Work',isFavourite: false, isArchived: true, isTrashed: false, updatedAt: new Date()},
     ]);
-    const filteredNotes =notes.filter((note)=> note.title.toLowerCase().includes(search.toLowerCase()) || note.content.toLowerCase().includes(search.toLowerCase()));
+    const filteredNotes = notes.filter((note) => {const matchesSearch =note.title.toLowerCase().includes(search.toLowerCase()) ||note.content.toLowerCase().includes(search.toLowerCase());
+        const matchesCat = !selectedCat || note.category === selectedCat;
+        if (currentView === 'favourite') {
+            return matchesSearch && matchesCat &&note.isFavourite;
+        }
+        if (currentView === 'archived') {
+            return matchesSearch && matchesCat&&note.isArchived;
+        }
+        if (currentView === 'trashed') {
+            return matchesSearch && matchesCat&& note.isTrashed;
+        }
+        return matchesSearch && matchesCat;
+    });    
     const handleNewNote =()=> {
         alert('new note button clicked');
     };

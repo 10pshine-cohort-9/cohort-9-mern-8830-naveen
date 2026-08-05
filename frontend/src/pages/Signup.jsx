@@ -24,7 +24,6 @@ const Signup = () => {
             return;
         }
         setSubmitting(true);
-        console.log(form);
 
         setTimeout(() => {
             setSubmitting(false);
