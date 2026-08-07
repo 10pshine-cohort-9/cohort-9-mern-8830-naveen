@@ -39,7 +39,7 @@ const Profile = () => {
     const navigate =useNavigate();
     const [editing, setEditing] =useState(false);
     const [confirmingDelete,setConfirmingDelete] =useState(false);
-    const [user, setUser] =useState({fullName: 'Naveen Fatima', email: 'naveenminhaj@gmail.com', tagline: 'mern developer intern', createdAt: '2023-08-15', timezone: 'UTC+5',accountType: 'Free', theme: 'Light', language: 'English'});
+    const [user, setUser] =useState({fullName: 'User', email: 'user@example.com', tagline: 'mern developer intern', createdAt: '2023-08-15', timezone: 'UTC+5',accountType: 'Free', theme: 'Light', language: 'English'});
     const [fullName, setFullName] = useState(user.fullName);
     const [tagline, setTagline] =useState(user.tagline);
     const memberSince = new Date(user.createdAt).toLocaleDateString('en-US', {year: 'numeric',month: 'long',day: 'numeric'});
@@ -71,11 +71,16 @@ const Profile = () => {
                 </div>
                 <div className='mb-6 flex items-center justify-between rounded-xl border border-black/5 bg-white p-5'>
                     <div className='flex items-center gap-4'>
-                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.email)}`} alt={user.fullName} className="h-16 w-16 rounded-full border border-black/5 bg-sand"/>
+                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.fullName)}`} alt={user.fullName} className="h-16 w-16 rounded-full border border-black/5 bg-sand"/>
                         <div>
-                            {editing ? ( <input value={fullName} onChange={(e)=>setFullName(e.target.value)} className='mb-1 rounded border border-black/10 px-2 py-1 text-base font-semibold outline-none'/>): (<h2 className='text-base font-semibold'>{user.fullName}</h2>)}
+                            {editing ? (
+                                <>
+                                    <label htmlFor='fullName' className='sr-only'>Full Name</label>
+                                    <input id ='fullName' value={fullName} onChange={(e)=>setFullName(e.target.value)} className='mb-1 rounded border border-black/10 px-2 py-1 text-base font-semibold outline-none'/></>): (<h2 className='text-base font-semibold'>{user.fullName}</h2>)}
                             <p className='text-sm text-ink/50'>{user.email}</p>
-                            {editing ? (<input value={tagline} onChange={(e)=>setTagline(e.target.value)} className='mt-1 rounded border border-black/10 px-2 py-1 text-sm outline-none'/>): (<p className='mt-1 text-sm text-ink/50'>{user.tagline}</p>)}
+                            {editing ? (
+                                <><label htmlFor="tagline" className='sr-only'>Tagline</label>
+                                <input value={tagline} onChange={(e)=>setTagline(e.target.value)} className='mt-1 rounded border border-black/10 px-2 py-1 text-sm outline-none'/></>): (<p className='mt-1 text-sm text-ink/50'>{user.tagline}</p>)}
                         </div>
                     </div>
                     {editing ? ( 

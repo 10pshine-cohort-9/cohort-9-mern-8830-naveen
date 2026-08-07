@@ -54,7 +54,7 @@ const Dashboard = () =>{
         return matchesSearch && matchesCat &&!note.isArchived&&!note.isTrashed;
     });    
     const handleRestore =(id)=>{
-        setNotes((prev)=>prev.map((note)=> note.id=== id? {...note,isArchived: false,isTrashed:false}:note));
+        setNotes((prev)=>prev.map((note)=> note.id=== id? {...note,isTrashed:false}:note));
     };
     const handleDeleteForever=(id)=>{
         setNotes((prev)=>prev.filter((note)=> note.id!==id ));
