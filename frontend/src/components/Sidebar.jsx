@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate,useSearchParams } from 'react-router-dom';
 import {FileText, Star, Archive, Trash2, Plus, ChevronDown, Feather, User, LogOut} from 'lucide-react';
+import PropTypes from 'prop-types';
 
 const CATEGORY_DOTS = {
     Personal: 'bg-orange-300',
@@ -20,7 +21,7 @@ const Sidebar = ({categories =['Personal', 'Work', 'Ideas', 'Study'], onNewCateg
     const trashed =searchParams.get("trashed")==="true";
     const [showMenu, setShowMenu]  =useState(false);
     const user = {
-        fullName: "Naveen Fatima",
+        fullName: "User",
     };
     const handleLogout =()=> {
         navigate('/login');
@@ -79,5 +80,9 @@ const Sidebar = ({categories =['Personal', 'Work', 'Ideas', 'Study'], onNewCateg
             </div>
         </aside>
     );
+};
+Sidebar.propTypes={
+    categories: PropTypes.arrayOf(PropTypes.string),
+    onNewCategory: PropTypes.func,
 };
 export default Sidebar;
