@@ -6,6 +6,7 @@ import NoteEditor from "./pages/NoteEditor";
 import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
       <Route path="/editor/:id" element={<NoteEditor/>}/>
       <Route path="/profile" element={<Profile />} />
       <Route path="/change-password" element={<ChangePassword />} />
-
+      <Route path="/forgot-password" element={<ForgotPassword/>}/>
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

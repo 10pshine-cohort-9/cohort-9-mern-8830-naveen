@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, {useState} from 'react';
 import {Mail, Lock, Feather, ArrowRight} from 'lucide-react';
 import {Link} from 'react-router-dom';
@@ -5,7 +6,7 @@ const Login = () => {
     const [form, setForm] = useState({email: '', password: ''});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-
+    const navigate = useNavigate();
     const handleChange = (e) => {
         setForm({...form, [e.target.name]: e.target.value});
     };
@@ -15,8 +16,6 @@ const Login = () => {
 
         setError('');
         setSubmitting(true);
-
-        console.log(form);
 
         setTimeout(() => {
             setSubmitting(false);
@@ -51,7 +50,7 @@ const Login = () => {
                     </label>
 
                     <div className="text-right">
-                        <button type="button" className="text-xs text-clay hover:underline">Forgot password?</button>
+                        <button onClick={()=> navigate('/forgot-password')}type="button" className="text-xs text-clay hover:underline">Forgot password?</button>
                     </div>
                     <button type = "submit" disabled={submitting} className="mt-1 flex items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50">{submitting ? 'Logging in...' : 'Login'} <ArrowRight size={15}/></button>
                 </form>
