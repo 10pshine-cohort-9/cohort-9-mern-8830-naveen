@@ -80,7 +80,7 @@ const Profile = () => {
                             <p className='text-sm text-ink/50'>{user.email}</p>
                             {editing ? (
                                 <><label htmlFor="tagline" className='sr-only'>Tagline</label>
-                                <input value={tagline} onChange={(e)=>setTagline(e.target.value)} className='mt-1 rounded border border-black/10 px-2 py-1 text-sm outline-none'/></>): (<p className='mt-1 text-sm text-ink/50'>{user.tagline}</p>)}
+                                <input id = 'tagline'value={tagline} onChange={(e)=>setTagline(e.target.value)} className='mt-1 rounded border border-black/10 px-2 py-1 text-sm outline-none'/></>): (<p className='mt-1 text-sm text-ink/50'>{user.tagline}</p>)}
                         </div>
                     </div>
                     {editing ? ( 
