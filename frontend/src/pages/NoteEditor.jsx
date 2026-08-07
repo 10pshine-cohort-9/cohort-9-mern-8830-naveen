@@ -8,7 +8,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import { useParams,useSearchParams } from "react-router-dom";
-
+import Underline from "@tiptap/extension-underline";
 const ToolbarButton = ({ icon: Icon, label, onClick, active }) => (
   <button type="button" onClick={onClick} aria-label={label} title={label} className={`rounded-md p-1.5 transition ${ active ? "bg-clay text-white": "text-ink/60 hover:bg-sand"}`}>
     <Icon size={15} />
@@ -34,7 +34,7 @@ const NoteEditor = () => {
   const [category, setCategory] =useState(existNote?existNote.category||"" : defaultCategory);
   const [title, setTitle] = useState(existNote? existNote.title:"");
   const [favourite, setFavourite] = useState(existNote?existNote.isFavourite:false);
-  const editor = useEditor({extensions:[ StarterKit.configure({ bulletList: {}, orderedList: {},blockquote: {},}),Link,Image,],
+  const editor = useEditor({extensions:[ StarterKit.configure({ bulletList: {}, orderedList: {},blockquote: {},}),Underline,Link,Image,],
   content: existNote? existNote.content: "<p>Start writing...</p>",});
   useEffect(()=>{
     if(editor && existNote){
@@ -89,9 +89,27 @@ const NoteEditor = () => {
   if (!editor) {
     return null;
   }
+  const handleNewCategory =()=>{
+    const name =prompt("Enter category name");
+    if(!name){
+      return;
+    }
+    const trimName=name.trim();
+    if(!trimName){
+      return;
+    }
+    if (categories.some((cat)=> cat.toLowerCase()===trimName.toLowerCase())){
+      alert("category already exists");
+      return;
+    }
+    const updateCategories = [...categories,trimName];
+    setCategories(updateCategories);
+    localStorage.setItem("categories",JSON.stringify(updateCategories));
+    setCategory(trimName);
+  };
     return (
     <div className="flex min-h-screen bg-cream">
-      <Sidebar categories={categories}/>
+      <Sidebar categories={categories} onNewCategory={handleNewCategory}/>
       <main className="flex-1 px-8 py-6">
         <div className="mb-4 flex items-center justify-between">
           <button onClick={() => navigate("/notes")} className="flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink">
@@ -109,18 +127,7 @@ const NoteEditor = () => {
              <label className="mb-1 block text-sm font-medium text-ink/70">Category</label>
              <select value={category} onChange={(e)=> {
               if(e.target.value === "__new__"){
-                const name = prompt("Enter category name");
-                if(!name){
-                  return;
-                }
-                if (categories.includes(name)){
-                  alert("Category already exists");
-                  return;
-                }
-                const updated = [...categories, name];
-                setCategories(updated);
-                localStorage.setItem("categories",JSON.stringify(updated));
-                setCategory(name);
+                handleNewCategory();
               }
               else{
                 setCategory(e.target.value);

@@ -74,6 +74,7 @@ const Dashboard = () =>{
     const handleDelete=(id)=>{
         setNotes((prev)=>prev.map((note)=> note.id===id?{...note,isTrashed:true}:note));
     };
+    
     return(
         
         <div className="flex min-h-screen bg-cream">

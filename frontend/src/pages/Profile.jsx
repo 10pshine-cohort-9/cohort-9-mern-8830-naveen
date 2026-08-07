@@ -80,7 +80,7 @@ const Profile = () => {
                     </div>
                     {editing ? ( 
                         <div className='flex gap-2'>
-                            <button onClick={()=> setEditing(false)} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand'>Cancel</button>
+                            <button onClick={()=>{setFullName(user.fullName); setTagline(user.tagline); setEditing(false)}} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand'>Cancel</button>
                             <button onClick={handleSaveProfile} className='rounded-lg bg-ink px-4 py-2 text-white hover:opacity-90'>Save</button>
                         </div>
                     ):(
