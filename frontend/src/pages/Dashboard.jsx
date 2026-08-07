@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Search, Plus, Lock} from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams,useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import NoteCard from '../components/NoteCard';
 const VIEW_TITLES ={
@@ -10,6 +10,10 @@ const VIEW_TITLES ={
 };
 
 const Dashboard = () =>{
+    const [categories, setCategories]=useState(()=>{const saved=localStorage.getItem("categories");
+        return saved? JSON.parse(saved):["Personal", "Work", "Ideas", "Study"]});
+    useEffect(()=>{ localStorage.setItem("categories", JSON.stringify(categories));},[categories]);
+    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [searchParams] = useSearchParams();
     const selectedCat = searchParams.get('category');
@@ -25,36 +29,59 @@ const Dashboard = () =>{
     }
     const viewTitle =selectedCat||VIEW_TITLES[currentView]||'All Notes'
     const [activeMenu, setActiveMenu] =useState(null);
-    const [notes] = useState([
+    const initialNotes =[
         {id: 1, title:'shopping list', content:'milk, eggs, bread',category: 'Personal', isFavourite: true, isArchived: false, isTrashed: false, updatedAt: new Date()},
         {id: 2, title:'workout plan', content: 'Monday: chest, Tuesday: back, Wednesday: legs', category: 'Study',isFavourite: false, isArchived: false, isTrashed: false, updatedAt: new Date()},
         {id: 3, title:'meeting notes', content: 'Discuss project timeline and deliverables', category:'Work',isFavourite: false, isArchived: true, isTrashed: false, updatedAt: new Date()},
-    ]);
+    ];
+    const [notes,setNotes] =useState(()=>{const saved =localStorage.getItem("notes");
+        return saved? JSON.parse(saved):initialNotes;
+    });
+    useEffect(()=>{
+        localStorage.setItem("notes",JSON.stringify(notes));
+    },[notes]);
     const filteredNotes = notes.filter((note) => {const matchesSearch =note.title.toLowerCase().includes(search.toLowerCase()) ||note.content.toLowerCase().includes(search.toLowerCase());
         const matchesCat = !selectedCat || note.category === selectedCat;
         if (currentView === 'favourite') {
-            return matchesSearch && matchesCat &&note.isFavourite;
+            return matchesSearch && matchesCat &&note.isFavourite && !note.isArchived && !note.isTrashed;
         }
         if (currentView === 'archived') {
-            return matchesSearch && matchesCat&&note.isArchived;
+            return matchesSearch && matchesCat&&note.isArchived && !note.isTrashed;
         }
         if (currentView === 'trashed') {
             return matchesSearch && matchesCat&& note.isTrashed;
         }
-        return matchesSearch && matchesCat;
+        return matchesSearch && matchesCat &&!note.isArchived&&!note.isTrashed;
     });    
+    const handleRestore =(id)=>{
+        setNotes((prev)=>prev.map((note)=> note.id=== id? {...note,isArchived: false,isTrashed:false}:note));
+    };
+    const handleDeleteForever=(id)=>{
+        setNotes((prev)=>prev.filter((note)=> note.id!==id ));
+    };
     const handleNewNote =()=> {
-        alert('new note button clicked');
+        navigate('/editor');
     };
     const handleOpenNote =(note) => {
-        alert(`opening "${note.title}"`);
+        navigate(`/editor/${note.id}`);
     };
     const handleToggleFavourite =(note) => {
-        alert(`toggling favourite for "${note.title}"`);
+        setNotes((prev)=>prev.map((n)=>n.id===note.id?{...n,isFavourite:!n.isFavourite}:n));
+    };
+    const handleArchive=(id)=>{
+        setNotes((prev)=> prev.map((note)=> note.id ===id?{...note,isArchived: !note.isArchived}:note));
+    };
+    const handleDelete=(id)=>{
+        setNotes((prev)=>prev.map((note)=> note.id===id?{...note,isTrashed:true}:note));
     };
     return(
+        
         <div className="flex min-h-screen bg-cream">
-            <Sidebar onNewCategory={()=>{}}/>
+            <Sidebar categories={categories}onNewCategory={()=>{const newCat=prompt("Enter category name");
+                if(newCat && !categories.includes(newCat.trim())){
+                    setCategories([...categories,newCat.trim()]);
+                }
+            }}/>
             <main className="flex-1 px-8 py-8">
                 <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -77,7 +104,7 @@ const Dashboard = () =>{
                     </div> ): (
                         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
                             {filteredNotes.map((note)=>(
-                                <NoteCard key={note.id} note={note} onOpen={handleOpenNote} onToggleFavourite={handleToggleFavourite} activeMenu={activeMenu} setActiveMenu={setActiveMenu}/>    
+                                <NoteCard key={note.id} note={note} onOpen={handleOpenNote} onToggleFavourite={handleToggleFavourite} activeMenu={activeMenu} setActiveMenu={setActiveMenu} onArchive={handleArchive} onDelete={handleDelete} onRestore={handleRestore} onDeleteForever={handleDeleteForever}/>    
                             ))}
                         </div>
                     )}

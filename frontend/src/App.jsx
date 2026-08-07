@@ -16,7 +16,7 @@ function App() {
 
       <Route path="/notes" element={<Dashboard />} />
       <Route path="/editor" element={<NoteEditor />} />
-
+      <Route path="/editor/:id" element={<NoteEditor/>}/>
       <Route path="/profile" element={<Profile />} />
       <Route path="/change-password" element={<ChangePassword />} />
 

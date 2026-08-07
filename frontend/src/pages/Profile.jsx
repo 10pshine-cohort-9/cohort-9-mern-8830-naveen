@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import {Pencil, User,Mail,Calendar,Clock,CreditCard,Sun,Bell,ShieldCheck,Globe,Lock,Monitor, LogOut,Trash2,ChevronRight,Shield} from 'lucide-react';
+import {Pencil, User,Mail,Calendar,Clock,CreditCard,Sun,Bell,ShieldCheck,Globe,Lock, LogOut,Trash2,ChevronRight,Shield} from 'lucide-react';
 import Sidebar from '../components/Sidebar';
-
+import { useNavigate } from 'react-router-dom';
 const InfoRow=({icon: Icon, label, value, badge})=>(
     <div className='flex items-center justify-between py-2.5'>
         <span className='flex items-center gap-2.5 text-sm text-ink/60'>
@@ -36,6 +36,7 @@ const ActionRow=({icon:Icon, title, subtitle, onClick,danger})=> (
 );
 
 const Profile = () => {
+    const navigate =useNavigate();
     const [editing, setEditing] =useState(false);
     const [confirmingDelete,setConfirmingDelete] =useState(false);
     const [user, setUser] =useState({fullName: 'Naveen Fatima', email: 'naveenminhaj@gmail.com', tagline: 'mern developer intern', createdAt: '2023-08-15', timezone: 'UTC+5',accountType: 'Free', theme: 'Light', language: 'English'});
@@ -48,11 +49,11 @@ const Profile = () => {
         alert('profile updated');
     };
     const handleLogout=()=>{
-        alert('logged out');
+        navigate('/login');
     };
     const handleDeleteAccount=()=>{
         setConfirmingDelete(false);
-        alert('account deleted');
+        navigate('/login')
     };
     const handleCancel=()=>{
         setFullName(user.fullName);
@@ -105,11 +106,10 @@ const Profile = () => {
                         <PrefRow icon={Globe} label='Language' value={user.language}/>
                         </div>
                     </div>
-                        <div className='rounded-xl border border-black/5 bg-white p-5'>
+                        <div className='rounded-lg border border-black/5 bg-white p-5'>
                             <h3 className='mb-2 text-sm font-semibold'>Security</h3>
                             <div className='divide-y divide-black/5'>
-                            <ActionRow icon={Lock} title='Change Password' subtitle='Update your password regularly' onClick={()=>alert('change password')}/>
-                            <ActionRow icon={Monitor} title='Active Sessions' subtitle='View and manage active sessions' onClick={()=>alert('active sessions')}/>
+                            <ActionRow icon={Lock} title='Change Password' subtitle='Update your password regularly' onClick={()=>navigate('/change-password')}/>
                         </div>
                     </div>
                     <div className='rounded-xl border border-black/5 bg-white p-5'>
