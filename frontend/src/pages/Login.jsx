@@ -19,7 +19,7 @@ const Login = () => {
 
         setTimeout(() => {
             setSubmitting(false);
-            alert("Login UI Working");
+            navigate('/notes');
     }, 1000);
 };
     return(

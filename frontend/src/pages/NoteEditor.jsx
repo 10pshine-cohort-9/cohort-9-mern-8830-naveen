@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {ArrowLeft,Star,Bold,Italic,Underline,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,} from "lucide-react";
+import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,} from "lucide-react";
 import '../editor.css';
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
@@ -145,7 +145,7 @@ const NoteEditor = () => {
         <div className="mb-3 flex flex-wrap items-center gap-1 rounded-lg border border-black/10 bg-white px-2 py-1.5">
           <ToolbarButton icon={Bold} label="Bold" active={editor?.isActive("bold")} onClick={() => editor?.chain().focus().toggleBold().run()}/>
           <ToolbarButton icon={Italic} label="Italic" active={editor?.isActive("italic")} onClick={() => editor?.chain().focus().toggleItalic().run()}/>
-          <ToolbarButton icon={Underline} label="Underline" active={editor?.isActive("underline")} onClick={() => editor?.chain().focus().toggleUnderline().run()}/>
+          <ToolbarButton icon={underline_icon} label="Underline" active={editor?.isActive("underline")} onClick={() => editor?.chain().focus().toggleUnderline().run()}/>
           <ToolbarButton icon={Strikethrough} label="Strike"active={editor?.isActive("strike")}onClick={() => editor?.chain().focus().toggleStrike().run()}/>
           <ToolbarButton icon={Code} label="Code" active={editor?.isActive("code")}onClick={() => editor?.chain().focus().toggleCode().run()} />
           <span className="mx-1 h-4 w-px bg-black/10" />
