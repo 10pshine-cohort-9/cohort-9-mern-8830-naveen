@@ -1,5 +1,5 @@
 const {Op} = require('sequelize');
-const {Note} = require("../models");
+const Note = require("../models/Note");
 const AppError = require("../utils/AppError");
 const catchAsync = require('../middleware/catchAsync');
 const logger = require('../config/logger');
@@ -26,8 +26,8 @@ const getNote = catchAsync(async(req,res,next)=>{
     const note = await Note.findOne({where: {id: req.params.id, userId: req.user.id}});
     if(!note){
         return next(new AppError("Note not found.", 404));
-        res.status(200).json({success: true, note});
     }
+    res.status(200).json({success: true, note});
 });
 const createNote = catchAsync(async(req, res)=>{
     const {title, content, category} = req.body;
@@ -36,7 +36,7 @@ const createNote = catchAsync(async(req, res)=>{
     res.status(201).json({success: true, note});
 });
 const updateNote = catchAsync(async(req,res,next)=>{
-    const note = await note.findOne({where: {id: req.params.id, userId: req.user.id}});
+    const note = await Note.findOne({where: {id: req.params.id, userId: req.user.id}});
     if(!note){
         return next(new AppError("Note not found",404));
     }
