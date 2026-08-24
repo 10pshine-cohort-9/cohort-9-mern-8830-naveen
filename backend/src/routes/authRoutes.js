@@ -1,0 +1,15 @@
+const express = require('express');
+const {signup, login, getMe, updateMe, changePassword, deleteMe,forgotPassword,resetPassword} = require('../controllers/authController');
+const {protect} = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const authRateLimit = require('../middleware/authRateLimit');
+const router = express.Router();
+router.post('/signup', validate(['fullName', 'email','password']), signup);
+router.post('/login', validate(['email', 'password']),login);
+router.post('/forgot-password', validate(['email']),forgotPassword);
+router.post('/reset-password', validate(['token', 'newPassword']), resetPassword);
+router.get('/me',protect,getMe);
+router.patch('/me', protect, updateMe);
+router.patch('/change-password', protect, validate(['currentPassword', 'newPassword']), changePassword);
+router.delete('/me', protect, deleteMe);
+module.exports = router;
