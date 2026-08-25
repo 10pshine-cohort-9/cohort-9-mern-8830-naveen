@@ -56,10 +56,10 @@ describe('Notes API', () => {
     const res = await request(app)
       .patch(`/api/notes/${noteId}`)
       .set(authHeader())
-      .send({ title: 'Updated Title', isFavorite: true });
+      .send({ title: 'Updated Title', isFavourite: true });
     expect(res.status).to.equal(200);
     expect(res.body.note.title).to.equal('Updated Title');
-    expect(res.body.note.isFavorite).to.be.true;
+    expect(res.body.note.isFavourite).to.be.true;
   });
 
   it('returns 404 for a note belonging to another user or missing', async () => {

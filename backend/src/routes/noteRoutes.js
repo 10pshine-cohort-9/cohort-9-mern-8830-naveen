@@ -1,0 +1,12 @@
+const express=require('express');
+const {getNotes, getNote, createNote, updateNote, deleteNote,} = require('../controllers/noteController');
+const {protect} =require('../middleware/auth');
+const validate = require('../middleware/validate');
+const router=express.Router();
+router.use(protect);
+router.get('/',getNotes);
+router.post('/', validate(['title']), createNote);
+router.get('/:id',getNote);
+router.patch('/:id',updateNote);
+router.delete('/:id', deleteNote);
+module.exports = router;
