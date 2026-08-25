@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "cross-env NODE_ENV=test mocha tests/**/*.test.js --timeout 20000 --exit",
-    "lint": "eslint src"
+    "test": "cross-env NODE_ENV=test mocha tests/**/*.test.js --timeout 20000 --exit"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

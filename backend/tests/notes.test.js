@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const request = require('supertest');
 const app = require('../src/app');
 const { sequelize } = require('../src/models');
-
+const {Note} = require('../src/models');
 describe('Notes API', () => {
   let token;
 
@@ -34,7 +34,16 @@ describe('Notes API', () => {
     expect(res.body.note.title).to.equal('Project Ideas');
     noteId = res.body.note.id;
   });
-
+  it('returns 400 and does not create a note for a whitespace-only title', async()=>{
+    const before = await Note.count();
+    const res = await request(app)
+      .post('/api/notes')
+      .set(authHeader())
+      .send({title: '  '});
+    expect(res.status).to.equal(400);
+    const after = await Note.count();
+    expect(after).to.equal(before);
+  });
   it('rejects a note without a title', async () => {
     const res = await request(app).post('/api/notes').set(authHeader()).send({ content: 'no title' });
     expect(res.status).to.equal(400);

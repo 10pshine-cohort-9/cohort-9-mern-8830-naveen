@@ -2,7 +2,13 @@ const AppError = require('../utils/AppError');
 const validate =(requiredFields)=> (req, res, next)=> {
     const missing = requiredFields.filter((field)=> {
         const value = req.body?.[field];
-        return value === undefined || value === null || value==='';
+        if(value === undefined || value === null){
+            return true;
+        }
+        if(typeof value === 'string' && value.trim() === ''){
+            return true;
+        }
+        return false;
     });
     if(missing.length>0){
         return next(new AppError(`Missing required fields: ${missing.join(', ')}`, 400));

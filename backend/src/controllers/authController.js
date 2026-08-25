@@ -1,7 +1,7 @@
 const crypto =require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const {User,Note}= require('../models');
+const {User,Note,sequelize}= require('../models');
 const AppError = require('../utils/AppError');
 const catchAsync=require('../middleware/catchAsync');
 const logger=require('../config/logger');
@@ -73,8 +73,10 @@ const signToken =(id)=>
         res.status(200).json({success: true, message:"Password updated successfully."});
     });
     const deleteMe = catchAsync(async(req,res)=>{
-        await Note.destroy({where:{userId:req.user.id}});
-        await req.user.destroy();
+        await sequelize.transaction(async(transaction)=>{
+            await Note.destroy({where:{userId:req.user.id}, transaction});
+            await req.user.destroy({transaction,});
+        });
         res.status(200).json({success:true, message:"Account deleted successfully."});
     });
     const forgotPassword =catchAsync(async(req,res,next)=>{

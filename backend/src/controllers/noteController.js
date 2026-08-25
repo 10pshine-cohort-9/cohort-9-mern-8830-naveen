@@ -16,9 +16,6 @@ const getNotes = catchAsync(async (req, res) => {
         if (archived === 'true') {
             where.isArchived = true;
         }
-        else if(category){
-            
-        }
         else{
             where.isArchived = false;
         }
