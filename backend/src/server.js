@@ -20,14 +20,18 @@ const start = async ()=> {
 };
 process.on('unhandledRejection', async(err)=>{
     logger.error({err}, 'Unhandled promise rejection. shutting down...');
-    if(server){
-        server.close(async ()=>{
-            await sequelize.close();
-            process.exit(1);
-        });
-    }
-    else{
+    try{
+        if(server){
+            await new Promise((resolve)=>{
+                server.close(resolve);
+            });
+        }
         await sequelize.close();
+    }
+    catch(cleanupError){
+        logger.error({err: cleanupError}, 'Error during shutdown cleanup');
+    }
+    finally{
         process.exit(1);
     }
 });

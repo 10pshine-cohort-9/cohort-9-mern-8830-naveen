@@ -5,10 +5,10 @@ const validate =(requiredFields)=> (req, res, next)=> {
         if(value === undefined || value === null){
             return true;
         }
-        if(typeof value === 'string' && value.trim() === ''){
+        if(typeof value !== 'string'){
             return true;
         }
-        return false;
+        return value.trim()==='';
     });
     if(missing.length>0){
         return next(new AppError(`Missing required fields: ${missing.join(', ')}`, 400));
