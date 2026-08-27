@@ -1,22 +1,29 @@
 import React, {useState} from 'react';
-import { Link} from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import {User, Mail, Lock, Feather, ArrowRight} from 'lucide-react';
+import {useAuth} from '../context/AuthContext';
 
 const Signup = () => {
     const [form, setForm] = useState({fullName: '', email: '', password: '', confirmPassword: ''});
     const [agreed, setAgreed] = useState(false);
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const navigate = useNavigate();
+    const {signup} = useAuth();
 
     const handleChange =(e) => {
         setForm({...form, [e.target.name]: e.target.value});
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         setError('');
         if (form.password !== form.confirmPassword){
             setError('Passwords do not match.');
+            return;
+        }
+        if(form.password.length < 8){
+            setError('Password must be at least 8 characters long.');
             return;
         }
         if (!agreed){
@@ -24,11 +31,16 @@ const Signup = () => {
             return;
         }
         setSubmitting(true);
-
-        setTimeout(() => {
+        try{
+            await signup({fullName: form.fullName,email: form.email, password: form.password});
+            navigate('/notes');
+        }
+        catch(err){
+            setError(err.response?.data?.message || "Could not create account.");
+        }
+        finally{
             setSubmitting(false);
-            alert("signup ui working");
-    }, 1000);
+        }
 };
     return(
         <div className="dune-bg flex min-h-screen items-center justify-center px-4 py-10">
@@ -50,19 +62,19 @@ const Signup = () => {
                 <form onSubmit={handleSubmit} className ="flex flex-col gap-3">
                     <label className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <User size={20} className="text-ink/40"/>
-                        <input type="text" name="fullName" placeholder="Full Name" required value={form.fullName} onChange={handleChange} className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
+                        <input type="text" name="fullName" placeholder="Full Name" required value={form.fullName} onChange={handleChange} autoComplete='name' className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
                     </label>
                     <label className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <Mail size={20} className="text-ink/40" />
-                        <input type="email" name="email" placeholder="Email" value={form.email} required onChange={handleChange} className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
+                        <input type="email" name="email" placeholder="Email" value={form.email} required onChange={handleChange} autoComplete='email' className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
                     </label>
                     <label className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <Lock size={20} className="text-ink/40" />
-                        <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required minLength={6} className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
+                        <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required minLength={8} autoComplete='new-password' className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
                     </label>
                     <label className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <Lock size={20} className="text-ink/40" />
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required minLength={6} className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none" />
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required minLength={8} autoComplete='new-password' className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none" />
                     </label>
                     <label className="flex items-start gap-2 text-xs text-ink/60">
                         <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
@@ -71,10 +83,7 @@ const Signup = () => {
 
                     <button type="submit" disabled={submitting} className ="mt-1 flex items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"> {submitting ? 'Creating account...' : 'Sign up'} <ArrowRight size={15}/> </button>
                 </form>
-                <div className ="my-5 flex items-center gap-3 text-xs text-ink/30">
-                    <span className="h-px flex-1 bg-black/10"/> or continue with {''}
-                    <span className="h-px flex-1 bg-black/10"/>
-                </div>
+
                 <p className ="mt-6 text-center text-xs text-ink/50">
                     Already have an account? {''}
                     <Link to="/login" className="font-medium text-ink hover:underline">

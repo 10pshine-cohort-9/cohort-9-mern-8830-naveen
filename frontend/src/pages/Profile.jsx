@@ -2,6 +2,9 @@ import React, {useState} from 'react';
 import {Pencil, User,Mail,Calendar,Clock,CreditCard,Sun,Bell,ShieldCheck,Globe,Lock, LogOut,Trash2,ChevronRight,Shield} from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
+import { deleteAccount, updateMe } from '../api/auth';
+import {useAuth} from '../context/AuthContext';
+
 const InfoRow=({icon: Icon, label, value, badge})=>(
     <div className='flex items-center justify-between py-2.5'>
         <span className='flex items-center gap-2.5 text-sm text-ink/60'>
@@ -10,7 +13,7 @@ const InfoRow=({icon: Icon, label, value, badge})=>(
             <span className='rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-clay'>
                 {value}
             </span>
-        ):( <span className='text-sm text-ink/80'>{value}</span>)}
+        ):( <span className='text-sm text-ink/80'>{value||'—'}</span>)}
     </div>
 );
 
@@ -37,29 +40,65 @@ const ActionRow=({icon:Icon, title, subtitle, onClick,danger})=> (
 
 const Profile = () => {
     const navigate =useNavigate();
+    const {user,logout, setUser} = useAuth();
     const [editing, setEditing] =useState(false);
     const [confirmingDelete,setConfirmingDelete] =useState(false);
-    const [user, setUser] =useState({fullName: 'User', email: 'user@example.com', tagline: 'mern developer intern', createdAt: '2023-08-15', timezone: 'UTC+5',accountType: 'Free', theme: 'Light', language: 'English'});
     const [fullName, setFullName] = useState(user.fullName);
     const [tagline, setTagline] =useState(user.tagline);
-    const memberSince = new Date(user.createdAt).toLocaleDateString('en-US', {year: 'numeric',month: 'long',day: 'numeric'});
-    const handleSaveProfile=()=>{
-        setUser({...user,fullName, tagline});
-        setEditing(false);
-        alert('profile updated');
+    const [error, setError] = useState('');
+    const [saving, setSaving] = useState(false);
+    if(!user){
+        return null;
+    }
+    const memberSince = (user.createdAt) ? new Date(user.createdAt).toLocaleDateString('en-US', {year: 'numeric',month: 'long',day: 'numeric'}) : '—';
+    const handleSaveProfile= async()=>{
+        if(!fullName.trim()){
+            setError('Full name is required.');
+            return;
+        }
+        setError('');
+        setSaving(true);
+
+        try{
+            const {user:updated} = await updateMe({fullName: fullName.trim(), tagline: tagline.trim(),});
+            setUser(updated);
+            setEditing(false);
+        }
+        catch(err){
+            setError(err.response?.data?.message || 'Could not update your profile.');
+        }
+        finally{
+            setSaving(false);
+        }
     };
     const handleLogout=()=>{
+        logout();
         navigate('/login');
     };
-    const handleDeleteAccount=()=>{
-        setConfirmingDelete(false);
-        navigate('/login')
+    const handleDeleteAccount= async()=>{
+        setError('');
+        setSaving(true);
+        try{
+            await deleteAccount();
+            logout();
+            navigate('/login');
+        }
+        catch(err){
+            setError(err.response?.data?.message || 'Could not delete your account');
+        }
+        finally{
+            setSaving(false);
+            setConfirmingDelete(false);
+        }
     };
     const handleCancel=()=>{
         setFullName(user.fullName);
-        setTagline(user.tagline);
+        setTagline(user.tagline||'');
         setEditing(false);
+        setConfirmingDelete(false);
+        setError('');
     };
+
     return(
         <div className='flex min-h-screen bg-cream'>
             <Sidebar/>
@@ -69,6 +108,9 @@ const Profile = () => {
                     <p className='text-sm text-ink/50'>Manage your account and preferences</p>
 
                 </div>
+                {error && (
+                    <p role='alert' className='mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600'>{error}</p>
+                )}
                 <div className='mb-6 flex items-center justify-between rounded-xl border border-black/5 bg-white p-5'>
                     <div className='flex items-center gap-4'>
                         <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.fullName)}`} alt={user.fullName} className="h-16 w-16 rounded-full border border-black/5 bg-sand"/>
@@ -77,16 +119,17 @@ const Profile = () => {
                                 <>
                                     <label htmlFor='fullName' className='sr-only'>Full Name</label>
                                     <input id ='fullName' value={fullName} onChange={(e)=>setFullName(e.target.value)} className='mb-1 rounded border border-black/10 px-2 py-1 text-base font-semibold outline-none'/></>): (<h2 className='text-base font-semibold'>{user.fullName}</h2>)}
+
                             <p className='text-sm text-ink/50'>{user.email}</p>
                             {editing ? (
                                 <><label htmlFor="tagline" className='sr-only'>Tagline</label>
                                 <input id = 'tagline'value={tagline} onChange={(e)=>setTagline(e.target.value)} className='mt-1 rounded border border-black/10 px-2 py-1 text-sm outline-none'/></>): (<p className='mt-1 text-sm text-ink/50'>{user.tagline}</p>)}
                         </div>
                     </div>
-                    {editing ? ( 
+                    {editing ? (
                         <div className='flex gap-2'>
-                            <button onClick={()=>{setFullName(user.fullName); setTagline(user.tagline); setEditing(false)}} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand'>Cancel</button>
-                            <button onClick={handleSaveProfile} className='rounded-lg bg-ink px-4 py-2 text-white hover:opacity-90'>Save</button>
+                            <button onClick={handleCancel} disabled={saving} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand'>Cancel</button>
+                            <button onClick={handleSaveProfile} disabled={saving}className='rounded-lg bg-ink px-4 py-2 text-white hover:opacity-90'>{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     ):(
                         <button onClick={()=>setEditing(true)} className='flex items-center gap-1.5 rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'><Pencil size={14}/>Edit Profile</button>)}
@@ -126,8 +169,8 @@ const Profile = () => {
                                 <div className='mt-4 rounded-lg bg-red-50 p-4'>
                                     <p className='mb-3 text-sm text-red-600'>Are you sure you want to delete your account?</p>
                                     <div className='flex gap-3'>
-                                        <button onClick={handleDeleteAccount} className='rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700'>Delete</button>
-                                        <button onClick={handleCancel} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'>Cancel</button>
+                                        <button onClick={handleDeleteAccount} className='rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700' disabled={saving}>{saving? 'Deleting...' : 'Delete'}</button>
+                                        <button onClick={handleCancel} disabled={saving} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'>Cancel</button>
                                     </div>
                                 </div>
                             )}
@@ -137,7 +180,7 @@ const Profile = () => {
                 <div className='rounded-xl border border-black/5 bg-white p-4'>
                     <div className='flex items-center justify-center gap-2 text-sm text-ink/50'>
                     <Shield size={16}/>
-                    your notes are encrypted and only visible to you.
+                    Your notes are encrypted and only visible to you.
                     </div>
                 </div>
         </main>

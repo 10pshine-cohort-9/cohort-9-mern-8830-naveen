@@ -1,26 +1,34 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import React, {useState} from 'react';
 import {Mail, Lock, Feather, ArrowRight} from 'lucide-react';
-import {Link} from 'react-router-dom';
+import {useAuth} from '../context/AuthContext';
+
 const Login = () => {
     const [form, setForm] = useState({email: '', password: ''});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
+    const {login} = useAuth();
+
     const handleChange = (e) => {
         setForm({...form, [e.target.name]: e.target.value});
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
-
         setError('');
         setSubmitting(true);
 
-        setTimeout(() => {
-            setSubmitting(false);
+        try{
+            await login(form);
             navigate('/notes');
-    }, 1000);
+        }
+        catch(err){
+            setError(err.response?.data?.message || 'Invalid email or password.');
+        }
+        finally{
+            setSubmitting(false);
+        }
 };
     return(
         <div className="dune-bg flex min-h-screen items-center justify-center px-4 py-10">
@@ -42,11 +50,11 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                     <label className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <Mail size={16} className ="text-ink/40"/>
-                        <input type="email" name = "email" value = {form.email} onChange={handleChange} placeholder="Email address" required className ="w-full bg-transparent text-sm outline-none placeholder:text-ink/40" />
+                        <input type="email" name = "email" value = {form.email} onChange={handleChange} placeholder="Email address" required autoComplete ='email' className ="w-full bg-transparent text-sm outline-none placeholder:text-ink/40" />
                             </label>
                     <label className ="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <Lock size={16} className ="text-ink/40"/>
-                        <input type="password" name = "password" value = {form.password} onChange={handleChange} placeholder="Password" required className ="w-full bg-transparent text-sm outline-none placeholder:text-ink/40"/>
+                        <input type="password" name = "password" value = {form.password} onChange={handleChange} placeholder="Password" autoComplete='current-password' required className ="w-full bg-transparent text-sm outline-none placeholder:text-ink/40"/>
                     </label>
 
                     <div className="text-right">
@@ -55,11 +63,6 @@ const Login = () => {
                     <button type = "submit" disabled={submitting} className="mt-1 flex items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50">{submitting ? 'Logging in...' : 'Login'} <ArrowRight size={15}/></button>
                 </form>
 
-                <div className="my-5 flex items-center gap-3 text-xs text-ink/30">
-                    <span className="h-px flex-1 bg-black/10"/>or continue with
-                    <span className="h-px flex-1 bg-black/10"/>
-                </div>
-                
                 <p className ="mt-6 text-center text-xs text-ink/50">
                 Dont have an account? {" "}
                 <Link to="/signup" className="text-clay hover:underline">
