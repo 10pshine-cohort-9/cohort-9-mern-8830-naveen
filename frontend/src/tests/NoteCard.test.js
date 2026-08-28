@@ -27,6 +27,6 @@ describe("NoteCard",()=>{
         render(<NoteCard note={baseNote} onOpen={onOpen} onToggleFavourite={onToggleFavourite}/>);
         fireEvent.click(screen.getByLabelText("Toggle Favourite"));
         expect(onToggleFavourite).toHaveBeenCalledWith(baseNote);
-        expect(onOpen).not.toHaveBeenCalledWith();
+        expect(onOpen).not.toHaveBeenCalled();
     });
 });

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState,useRef} from 'react';
 import {Search, Plus, Lock} from 'lucide-react';
 import { useSearchParams,useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -26,21 +26,30 @@ const Dashboard = () =>{
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [activeMenu,setActiveMenu] =useState(null);
-
+    const latestRequestRef = useRef(0);
     const fetchNotes =useCallback(async()=>{
+        const requestId = ++latestRequestRef.current;
         setLoading(true);
         setError('');
         try{
             const {notes:serverNotes} = await getNotes({
                 category: selectedCat || undefined, favourite: currentView=== 'favourite' ? 'true': undefined, archived: currentView==='archived' ? 'true' : undefined, trashed: currentView==='trashed' ? 'true':undefined, search: search.trim()||undefined,
             });
+            if(requestId !== latestRequestRef.current){
+                return;
+            }
             setNotes(serverNotes || []);
         }
         catch(err){
+            if(requestId !== latestRequestRef.current){
+                return;
+            }
             setError(err.response?.data?.message || 'Could not load notes.');
         }
         finally {
-            setLoading(false);
+            if(requestId === latestRequestRef.current){
+                setLoading(false);
+            }
         }
     }, [selectedCat, currentView, search]);
     useEffect(()=>{

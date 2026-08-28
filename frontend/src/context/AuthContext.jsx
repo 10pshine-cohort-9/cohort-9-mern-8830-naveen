@@ -17,8 +17,11 @@ export const AuthProvider =({children})=>{
             setUser(me);
         }
         catch(err){
-            localStorage.removeItem("notes_token");
-            setUser(null);
+            const status = err.response?.status;
+            if(status === 401 || status === 403){
+                localStorage.removeItem("notes_token");
+                setUser(null);
+            }
         }
         finally{
             setLoading(false);
@@ -44,9 +47,19 @@ export const AuthProvider =({children})=>{
         setUser(null);
     };
     const refreshUser=async()=>{
-        const {user:me} = await authApi.getMe();
-        setUser(me);
-        return me;
+        try{
+            const {user: me} = await authApi.getMe();
+            setUser(me);
+            return me;
+        }
+        catch(err){
+            const status = err.response?.status;
+            if(status === 401 || status === 403){
+                localStorage.removeItem("notes_token");
+                setUser(null);
+            }
+            throw err;
+        }
     };
     return(
         <AuthContext.Provider value={{user,loading,signup,login,logout,refreshUser,setUser}}>{children}</AuthContext.Provider>

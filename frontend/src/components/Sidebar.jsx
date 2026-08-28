@@ -61,7 +61,7 @@ const Sidebar = ({categories = [], onNewCategory, onDeleteCategory}) => {
                                 <button onClick={()=>navigate(`/notes?${new URLSearchParams({category: cat})}`)} className={`flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors ${category === cat ? 'bg-sand text-ink font-medium': 'text-ink/70 hover:bg-sand/60'}`}>
                                     <span className={`h-2 w-2 rounded-full ${CATEGORY_DOTS[cat] || 'bg-ink/30'}`}/>{cat}
                                 </button>
-                                <button type='button' onClick={()=> onDeleteCategory?.(cat)} className='hidden rounded-md px-2 py-1 text-xs text-red-400 hover:bg-red-50 hover:text-red-600 group-hover:block' title={`Delete ${cat}`}>x</button>
+                                <button type='button' onClick={()=> onDeleteCategory?.(cat)} aria-label={`Delete ${cat}`} className='hidden rounded-md px-2 py-1 text-xs text-red-400 hover:bg-red-50 hover:text-red-600 group-hover:block group-focus-within:block' title={`Delete ${cat}`}>x</button>
                                 </div>
                         ))}
                         <button onClick={()=>onNewCategory?.()} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-clay hover:bg-sand/60"><Plus size={16}/> New Category</button>

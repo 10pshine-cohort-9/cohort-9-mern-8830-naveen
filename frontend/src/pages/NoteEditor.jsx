@@ -42,6 +42,8 @@ const NoteEditor = () => {
 
   let active = true;
   setLoading(true);
+  setExistingNote(null);
+  setError('');
 
   getNote(id)
     .then(({ note }) => {
