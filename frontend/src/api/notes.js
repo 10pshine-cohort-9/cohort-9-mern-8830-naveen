@@ -5,10 +5,9 @@ export const getNotes = async(params)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not load notes.', status: err.response?.status, response: err.response,
-        };
-    }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not load notes.'), {status: err.response?.status, response: err.response,}
+    );
+}
 };
 export const getNote =async(id)=>{
     try{
@@ -16,10 +15,9 @@ export const getNote =async(id)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message||'Could not load note.', status: err.response?.status, response: err.response,
-        };
-    }
+        throw Object.assign(new Error(err.response?.data?.message||'Could not load note.'),{ status: err.response?.status, response: err.response,}
+    );
+}
 };
 export const createNote =async(payload)=>{
     
@@ -28,9 +26,8 @@ export const createNote =async(payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message||'Could not create note.', status: err.response?.status, response: err.response,
-        };
+        throw Object.assign(new Error(err.response?.data?.message||'Could not create note.'),{ status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const updateNote=async(id,payload)=>{
@@ -39,9 +36,8 @@ export const updateNote=async(id,payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message||'Could not update note.', status: err.response?.status, response: err.response,
-        };
+        throw Object.assign(new Error(err.response?.data?.message||'Could not update note.'),{ status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const deleteNote =async(id)=>{
@@ -50,8 +46,7 @@ export const deleteNote =async(id)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message||'Could not delete note.', status: err.response?.status, response: err.response,
-        };
+        throw Object.assign(new Error(err.response?.data?.message||'Could not delete note.'), {status: err.response?.status, response: err.response.}
+    );
     }
 };

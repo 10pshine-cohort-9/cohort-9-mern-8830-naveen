@@ -92,7 +92,7 @@ const Profile = () => {
         }
     };
     const handleCancel=()=>{
-        setFullName(user.fullName);
+        setFullName(user.fullName || '');
         setTagline(user.tagline||'');
         setEditing(false);
         setConfirmingDelete(false);
@@ -113,8 +113,8 @@ const Profile = () => {
                 )}
                 <div className='mb-6 flex items-center justify-between rounded-xl border border-black/5 bg-white p-5'>
                     <div className='flex items-center gap-4'>
-                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(user.fullName)}`} alt={user.fullName} className="h-16 w-16 rounded-full border border-black/5 bg-sand"/>
-                        <div>
+                        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=notes-user-${user.email?.length || 0}`} alt="User avatar" className="h-16 w-16 rounded-full border border-black/5 bg-sand"/>
+                            <div>
                             {editing ? (
                                 <>
                                     <label htmlFor='fullName' className='sr-only'>Full Name</label>

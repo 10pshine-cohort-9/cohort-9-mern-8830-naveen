@@ -5,9 +5,8 @@ export const signup =async(payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Signup failed.', status: err.response?.status, response: err.response,
-        };
+        throw Object.assign(new Error(err.response?.data?.message || 'Signup failed.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const login =async(payload)=>{
@@ -16,9 +15,8 @@ export const login =async(payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Login failed.', status: err.response?.status, response: err.response,        
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Login failed.'), {status: err.response?.status, response: err.response,}        
+    );
     }
 };
 export const getMe = async()=>{
@@ -27,9 +25,8 @@ export const getMe = async()=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not load user.', status: err.response?.status, response: err.response,
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not load user.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const updateMe =async(payload)=>{
@@ -38,10 +35,8 @@ export const updateMe =async(payload)=>{
     return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not update profile.', status: err.response?.status, response: err.response,
-
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not update profile.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const changePassword =async(payload)=>{
@@ -50,10 +45,8 @@ export const changePassword =async(payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not change password.', status: err.response?.status, response: err.response,
-
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not change password.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const deleteAccount =async()=>{
@@ -62,9 +55,8 @@ export const deleteAccount =async()=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not delete account.', status: err.response?.status, response: err.response,
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not delete account.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const forgotPassword =async(payload)=>{
@@ -73,9 +65,8 @@ export const forgotPassword =async(payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not send reset instructions.', status: err.response?.status, response: err.response,
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not send reset instructions.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
 export const resetPassword =async(payload)=>{
@@ -84,8 +75,7 @@ export const resetPassword =async(payload)=>{
         return response.data;
     }
     catch(err){
-        throw{
-            message: err.response?.data?.message || 'Could not reset password.', status: err.response?.status, response: err.response,
-        }
+        throw Object.assign(new Error(err.response?.data?.message || 'Could not reset password.'), {status: err.response?.status, response: err.response,}
+    );
     }
 };
