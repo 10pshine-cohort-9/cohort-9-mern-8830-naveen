@@ -3,37 +3,43 @@ import * as authApi from '../api/auth';
 const AuthContext = createContext(null);
 
 export const AuthProvider =({children})=>{
-    console.log('AUTH PROVIDER IS RENDERING')
     const [user,setUser] =useState(null);
     const [loading, setLoading] =useState(true);
-    
-    const logout =useCallback(()=>{
-        localStorage.removeItem("notes_token");
-        setUser(null);
+    const [authError, setAuthError] = useState(null);
+    const logout =useCallback(async()=>{
+        try{
+            await authApi.logout();
+        }
+        catch(err){
+        }
+        finally{
+            setUser(null);
+        }
     },[]);
     const loadUser = useCallback(async()=>{
-        const token = localStorage.getItem("notes_token");
-        if(!token){
-            setLoading(false);
-            return;
-        }
+        setAuthError(null);
         try{
             const {user:me} = await authApi.getMe();
             setUser(me);
+            setLoading(false);
         }
         catch(err){
             const status = err.response?.status;
             if(status === 401 || status === 403){
-                logout();
+                setUser(null);
+            }
+            else{
+                setAuthError(err);
             }
         }
         finally{
             setLoading(false);
         }
-    },[logout]);
+    },[]);
     useEffect(()=>{
-        const handleUnauthorized = ()=>{
-            logout()
+        const handleUnauthorized = async()=>{
+            await logout()
+            setLoading(false);
         };
         window.addEventListener("auth:unauthorized", handleUnauthorized);
         return()=>{
@@ -45,13 +51,11 @@ export const AuthProvider =({children})=>{
     },[loadUser]);
     const signup = async(payload)=>{
         const data = await authApi.signup(payload);
-        localStorage.setItem("notes_token", data.token);
         setUser(data.user);
         return data;
     };
     const login = async(payload)=>{
         const data = await authApi.login(payload);
-        localStorage.setItem("notes_token", data.token);
         setUser(data.user);
         return data;
     };
@@ -70,12 +74,11 @@ export const AuthProvider =({children})=>{
         }
     };
     return(
-        <AuthContext.Provider value={{user,loading,signup,login,logout,refreshUser,setUser}}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{user,loading,authError,signup,login,logout,refreshUser,setUser}}>{children}</AuthContext.Provider>
     );
 };
 export const useAuth =()=>{
     const ctx=useContext(AuthContext);
-    console.log('useAuth context:', ctx);
     if(!ctx){
         throw new Error("useAuth must be used within an AuthProvider");
     }

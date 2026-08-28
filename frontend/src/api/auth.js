@@ -79,3 +79,12 @@ export const resetPassword =async(payload)=>{
     );
     }
 };
+export const logout = async()=>{
+    try{
+        const response = await client.post('/auth/logout');
+        return response.data;
+    }
+    catch(err){
+        throw Object.assign(new Error(err.response?.data?.message || 'logout failed.'), {status: err.response?.status, response: err.response,});
+    }
+};
