@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,} from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,X, Trash2, Plus, AlertTriangle, ExternalLink} from "lucide-react";
 import '../editor.css';
 import Sidebar from "../components/Sidebar";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -18,13 +18,17 @@ const ToolbarButton = ({ icon: Icon, label, onClick, active }) => (
     <Icon size={15} />
   </button>
 );
-
+const ModalOverlay = ({children, onClose}) => {
+  return(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-[2px]" onMouseDown={(e)=>{if(e.target === e.currentTarget){onClose();}}}>{children}</div>
+  );
+};
 const NoteEditor = () => {
   const {user, refreshUser} = useAuth();
   const {id} =useParams();
   const navigate = useNavigate();
   const [searchParams]=useSearchParams();
-  const categories = Array.isArray(user.categories)? user.categories:[];
+  const categories =useMemo(()=> (Array.isArray(user?.categories)? user.categories:[]),[user?.categories]);
   const [existingNote, setExistingNote] = useState(null);
   const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
@@ -32,7 +36,19 @@ const NoteEditor = () => {
   const [title, setTitle] = useState('');
   const [favourite, setFavourite] = useState(false);
   const [category, setCategory] = useState(null);
-
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [categoryDeleting, setCategoryDeleting] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkError, setLinkError] = useState('');
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrl, setImageUrl] =useState('');
+  const [imageError, setImageError] =useState('');
 
   useEffect(() => {
   if (!id) {
@@ -95,8 +111,8 @@ const NoteEditor = () => {
   setCategory(null);
 }, [id, searchParams, categories]);
 
-  const editor = useEditor({extensions:[ StarterKit.configure({ bulletList: {}, orderedList: {},blockquote: {},}),Underline,Link,Image,],
-  content: "<p>Start writing...</p>",});
+  const editor = useEditor({extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),Image,],
+  content: "<p></p>",});
   useEffect(()=>{
     if(editor && existingNote){
       editor.commands.setContent(existingNote.content || "<p></p>");
@@ -129,34 +145,55 @@ const NoteEditor = () => {
       setSaving(false);
     }
   };
-  const handleNewCategory =async()=>{
-    const name =window.prompt("Enter category name");
-    const trimmed=name?.trim();
+  const handleNewCategory =()=>{
+    setNewCategoryName('');
+    setCategoryError('');
+    setShowCategoryModal(true);
+  };
+  const handleCreateCategory = async()=>{
+    const trimmed = newCategoryName.trim();
     if(!trimmed){
+      setCategoryError("Category name is required.");
       return;
     }
     const existingCategory = categories.find((cat)=>cat.toLowerCase()===trimmed.toLowerCase());
     if(existingCategory){
       setCategory(existingCategory);
+      setShowCategoryModal(false);
+      setNewCategoryName('');
       return;
     }
     try{
+      setCategorySaving(true);
+      setCategoryError('');
+
       const updatedCategories = [...categories, trimmed];
+      
       await updateMe({categories: updatedCategories});
       setCategory(trimmed);
       await refreshUser();
+      setShowCategoryModal(false);
+      setNewCategoryName('');
     }
     catch(err){
-      setError(err.response?.data?.message || 'Could not create category.');
+      setCategoryError(err.response?.data?.message || 'Could not create category.');
+    }
+    finally{
+      setCategorySaving(false);
     }
   };
-  const handleDeleteCategory=async(categoryToDelete)=>{
-    const confirmed = window.confirm(`Are you sure you want to delete "${categoryToDelete}"?`);
-    if(!confirmed){
+  const handleDeleteCategory = (categoryName)=>{
+    setCategoryToDelete(categoryName);
+    setShowDeleteCategoryModal(true);
+  };
+  const confirmDeleteCategory=async()=>{
+    if(!categoryToDelete){
       return;
     }
-    const updatedCategories = categories.filter((cat)=> cat.toLowerCase() !== categoryToDelete.toLowerCase());
     try{
+      setCategoryDeleting(true);
+      setError('');
+      const updatedCategories = categories.filter((cat)=> cat.toLowerCase() !== categoryToDelete.toLowerCase());
       await updateMe({categories: updatedCategories,});
 
     if(!existingNote && category && category.toLowerCase() === categoryToDelete.toLowerCase()){
@@ -168,24 +205,70 @@ const NoteEditor = () => {
         setCategory(null);
     }
     await refreshUser();
+    setShowDeleteCategoryModal(false);
+    setCategoryToDelete(null);
   }
   catch(err){
     setError(err.response?.data?.message || 'Could not delete category.');
   }
+  finally{
+    setCategoryDeleting(false);
+  }
 };
   const insertLink=()=>{
-    const url =window.prompt("Enter URL");
-    if(!url || !editor){
+    if(!editor){
         return;
     }
-    editor?.chain().focus().setLink({ href: url }).run();};
+    setLinkUrl('');
+    setLinkError('');
+    setShowLinkModal(true);
+  };
+  const handleInsertLink = ()=>{
+    const trimmedUrl = linkUrl.trim();
+    if(!trimmedUrl){
+      setLinkError('Please enter a URL.');
+      return;
+    }
+    try{
+      new URL(trimmedUrl);
+    }
+    catch{
+      setLinkError('Please enter a valid URL, e.g. https://example.com');
+      return;
+    }
+    editor?.chain().focus().setLink({ href: trimmedUrl }).run();
+    setShowLinkModal(false);
+    setLinkUrl('');
+    setLinkError('');
+  };
+
 
   const insertImage = () => {
-    const url = window.prompt("Paste image URL");
-    if (!url||!editor) {
+    if (!editor) {
         return;
     }
-    editor?.chain().focus().setImage({ src: url }).run();};
+    setImageUrl('');
+    setImageError('');
+    setShowImageModal(true);
+  };
+  const handleInsertImage = ()=>{
+    const trimmedUrl = imageUrl.trim();
+    if(!trimmedUrl){
+      setImageError('Please enter an image URL.');
+      return;
+    }
+    try{
+      new URL(trimmedUrl);
+    }
+    catch{
+      setImageError("Please enter a valid image URL.");
+      return;
+    }
+    editor?.chain().focus().setImage({ src: trimmedUrl }).run();
+    setShowImageModal(false);
+    setImageUrl('');
+    setImageError('');
+  }
 
   const handleCancel=() =>{
     navigate("/notes");
@@ -269,6 +352,139 @@ const NoteEditor = () => {
         </div>
         <p className="mt-3 text-xs text-ink/40">{words} words • {chars} characters</p>
       </main>
+      {showCategoryModal && (
+        <ModalOverlay onClose={()=>{if(!categorySaving){setShowCategoryModal(false);}}}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-ink">New Category</h2>
+                <p className="mt-1 text-sm text-ink/50">Create a category for your notes.</p>
+              </div>
+              <button type="button" disabled={categorySaving} onClick={()=>setShowCategoryModal(false)} className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink disabled:opacity-50"><X size={18}/></button>
+            </div>
+            <label htmlFor="new-category" className="mb-1.5 block text-sm font-medium text-ink/70">Category name</label>
+            <input id="new-category" autoFocus value={newCategoryName} onChange={(e)=>{setNewCategoryName(e.target.value); setCategoryError('');}} onKeyDown={(e)=>{if(e.key==='Enter'){handleCreateCategory();} if(e.key==='Escape'){if(!categorySaving){setShowCategoryModal(false);}}}} placeholder="e.g. Work" className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-clay"/>
+            {categoryError && (
+              <p className="mt-2 text-sm text-red-600">{categoryError}</p>
+            )}
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" disabled={categorySaving} onClick={()=> setShowCategoryModal(false)} className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40 disabled:opacity-50">Cancel</button>
+              <button type="button" disabled={categorySaving} onClick={handleCreateCategory} className="flex items-center gap-2 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"><Plus size={15}/>{categorySaving? 'Creating...' : "Create Category"}</button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+      {showDeleteCategoryModal && categoryToDelete && (
+        <ModalOverlay onClose={() => {if (!categoryDeleting) {
+              setShowDeleteCategoryModal(false);
+              setCategoryToDelete(null);
+            }}}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600"><AlertTriangle size={20}/></div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-ink">Delete Category?</h2>
+                <p className="mt-2 text-sm leading-6 text-ink/60">Are you sure you want to delete{" "}<span className="font-medium text-ink">"{categoryToDelete}"</span> ? This category will be removed from your category list.</p>
+              </div>
+              <button type="button" disabled={categoryDeleting} onClick={()=> {
+                  setShowDeleteCategoryModal(false);
+                  setCategoryToDelete(null);
+                }}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink disabled:opacity-50"><X size={18} /></button>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" disabled={categoryDeleting} onClick={() => {
+                  setShowDeleteCategoryModal(false);
+                  setCategoryToDelete(null);}} className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40 disabled:opacity-50">Cancel</button>
+              <button type="button" disabled={categoryDeleting} onClick={confirmDeleteCategory} className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"> <Trash2 size={15} />{categoryDeleting? "Deleting...": "Delete Category"}</button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+      {showLinkModal && (
+        <ModalOverlay onClose={() => {setShowLinkModal(false);setLinkUrl("");setLinkError("");}}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-ink">Insert Link</h2>
+                <p className="mt-1 text-sm text-ink/50">Enter the URL you want to link to.</p>
+              </div>
+              <button type="button" onClick={() => { setShowLinkModal(false); setLinkUrl(""); setLinkError("");}}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /></button>
+            </div>
+            <label htmlFor="link-url"className="mb-1.5 block text-sm font-medium text-ink/70">URL</label>
+            <input id="link-url" autoFocus value={linkUrl} onChange={(e) => {
+                setLinkUrl(e.target.value);
+                setLinkError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleInsertLink();
+                }
+                if (e.key === "Escape") {
+                  setShowLinkModal(false);
+                  setLinkUrl('');
+                  setLinkError('');
+                }
+              }}placeholder="https://example.com"className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-clay"/>
+            {linkError && (
+              <p className="mt-2 text-sm text-red-600">{linkError} </p>
+            )}
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" onClick={() => {
+                  setShowLinkModal(false);
+                  setLinkUrl("");
+                  setLinkError("");
+                }}className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40">Cancel</button>
+              <button type="button" onClick={handleInsertLink}className="flex items-center gap-2 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"><ExternalLink size={15} /> Insert Link</button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+      {showImageModal && (
+        <ModalOverlay onClose={() => {
+            setShowImageModal(false);
+            setImageUrl("");
+            setImageError("");
+          }}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-ink">Insert Image</h2>
+                <p className="mt-1 text-sm text-ink/50"> Paste the URL of an image. </p>
+              </div>
+              <button type="button" onClick={() => {
+                  setShowImageModal(false);
+                  setImageUrl("");
+                  setImageError("");
+                }}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /> </button>
+            </div>
+            <label htmlFor="image-url" className="mb-1.5 block text-sm font-medium text-ink/70">Image URL</label>
+            <input id="image-url" autoFocus value={imageUrl} onChange={(e) => {
+                setImageUrl(e.target.value);
+                setImageError("");
+              }}onKeyDown={(e) => {
+                if(e.key === "Enter"){
+                  handleInsertImage();
+                }
+                if(e.key === "Escape"){
+                  setShowImageModal(false);
+                  setImageUrl('');
+                  setImageError('');
+                }
+              }}placeholder="https://example.com/image.jpg"className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-clay"/>
+            {imageError && (
+              <p className="mt-2 text-sm text-red-600">{imageError}</p>
+            )}
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button"onClick={() => {
+                  setShowImageModal(false);
+                  setImageUrl("");
+                  setImageError("");
+                }}className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40">Cancel</button>
+              <button type="button"onClick={handleInsertImage}className="flex items-center gap-2 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"><ImageIcon size={15} />Insert Image</button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
     </div>
   );
 };

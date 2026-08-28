@@ -28,6 +28,16 @@ export const AuthProvider =({children})=>{
         }
     },[]);
     useEffect(()=>{
+        const handleUnauthorized = ()=>{
+            localStorage.removeItem("notes_token");
+            setUser(null);
+        };
+        window.addEventListener("auth:unauthorized", handleUnauthorized);
+        return()=>{
+            window.removeEventListener("auth:unauthorized", handleUnauthorized);
+        }
+    }, []);
+    useEffect(()=>{
         loadUser();
     },[loadUser]);
     const signup = async(payload)=>{

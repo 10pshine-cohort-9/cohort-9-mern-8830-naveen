@@ -43,8 +43,8 @@ const Profile = () => {
     const {user,logout, setUser} = useAuth();
     const [editing, setEditing] =useState(false);
     const [confirmingDelete,setConfirmingDelete] =useState(false);
-    const [fullName, setFullName] = useState(user.fullName);
-    const [tagline, setTagline] =useState(user.tagline);
+    const [fullName, setFullName] = useState(user.fullName || '');
+    const [tagline, setTagline] =useState(user.tagline || '');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
     if(!user){
