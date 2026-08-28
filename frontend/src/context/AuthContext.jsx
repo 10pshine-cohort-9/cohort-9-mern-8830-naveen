@@ -6,6 +6,11 @@ export const AuthProvider =({children})=>{
     console.log('AUTH PROVIDER IS RENDERING')
     const [user,setUser] =useState(null);
     const [loading, setLoading] =useState(true);
+    
+    const logout =useCallback(()=>{
+        localStorage.removeItem("notes_token");
+        setUser(null);
+    },[]);
     const loadUser = useCallback(async()=>{
         const token = localStorage.getItem("notes_token");
         if(!token){
@@ -19,24 +24,22 @@ export const AuthProvider =({children})=>{
         catch(err){
             const status = err.response?.status;
             if(status === 401 || status === 403){
-                localStorage.removeItem("notes_token");
-                setUser(null);
+                logout();
             }
         }
         finally{
             setLoading(false);
         }
-    },[]);
+    },[logout]);
     useEffect(()=>{
         const handleUnauthorized = ()=>{
-            localStorage.removeItem("notes_token");
-            setUser(null);
+            logout()
         };
         window.addEventListener("auth:unauthorized", handleUnauthorized);
         return()=>{
             window.removeEventListener("auth:unauthorized", handleUnauthorized);
         }
-    }, []);
+    }, [logout]);
     useEffect(()=>{
         loadUser();
     },[loadUser]);
@@ -52,10 +55,6 @@ export const AuthProvider =({children})=>{
         setUser(data.user);
         return data;
     };
-    const logout =()=>{
-        localStorage.removeItem("notes_token");
-        setUser(null);
-    };
     const refreshUser=async()=>{
         try{
             const {user: me} = await authApi.getMe();
@@ -65,8 +64,7 @@ export const AuthProvider =({children})=>{
         catch(err){
             const status = err.response?.status;
             if(status === 401 || status === 403){
-                localStorage.removeItem("notes_token");
-                setUser(null);
+                logout();
             }
             throw err;
         }
