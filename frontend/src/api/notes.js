@@ -46,7 +46,7 @@ export const deleteNote =async(id)=>{
         return response.data;
     }
     catch(err){
-        throw Object.assign(new Error(err.response?.data?.message||'Could not delete note.'), {status: err.response?.status, response: err.response.}
+        throw Object.assign(new Error(err.response?.data?.message||'Could not delete note.'), {status: err.response?.status, response: err.response,}
     );
     }
 };
