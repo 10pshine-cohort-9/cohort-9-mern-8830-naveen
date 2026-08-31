@@ -3,11 +3,16 @@ const AppError = require('../utils/AppError');
 const {User} = require('../models');
 const catchAsync=require('./catchAsync');
 const protect =catchAsync(async(req, res, next)=>{
-    const authHeader = req.headers.authorization;
-    if(!authHeader||!authHeader.startsWith('Bearer ')){
-        return next(new AppError('You are not logged in. Please login to continue',401));
+    let token = req.cookies?.notes_token;
+    if(!token){
+        const authHeader = req.headers.authorization;
+        if(authHeader && authHeader.startsWith('Bearer ')){
+            token = authHeader.split(' ')[1];
+        }
     }
-    const token=authHeader.split(' ')[1];
+    if(!token){
+        return next(new AppError('You are not logged in. Please login to continue.', 401));
+    }
     let decoded;
     try{
         decoded = jwt.verify(token, process.env.JWT_SECRET);

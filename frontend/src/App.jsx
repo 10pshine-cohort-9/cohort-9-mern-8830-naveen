@@ -7,22 +7,27 @@ import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
-
+import ResetPassword from './pages/ResetPassword';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from "./context/AuthContext";
 function App() {
   return (
+    <AuthProvider>
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path='/forgot-password' element={<ForgotPassword/>}/>
+      <Route path="/reset-password" element={<ResetPassword/>}/>
 
-      <Route path="/notes" element={<Dashboard />} />
-      <Route path="/editor" element={<NoteEditor />} />
-      <Route path="/editor/:id" element={<NoteEditor/>}/>
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/change-password" element={<ChangePassword />} />
-      <Route path="/forgot-password" element={<ForgotPassword/>}/>
+      <Route path="/notes" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/editor" element={<ProtectedRoute><NoteEditor /></ProtectedRoute>} />
+      <Route path="/editor/:id" element={<ProtectedRoute><NoteEditor/></ProtectedRoute>}/>
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </AuthProvider>
   );
 }
 

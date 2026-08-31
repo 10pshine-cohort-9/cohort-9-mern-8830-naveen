@@ -5,7 +5,11 @@ const {User,Note,sequelize}= require('../models');
 const AppError = require('../utils/AppError');
 const catchAsync=require('../middleware/catchAsync');
 const logger=require('../config/logger');
-const {sendPasswordResetEmail} = require('../config/email')
+const {sendPasswordResetEmail} = require('../config/email');
+const { path } = require('../app');
+const setAuthCookie =(res, token)=>{
+    res.cookie("notes_token", token, {httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000, path:'/'});
+};
 const signToken =(id)=>
     jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN||'7d',});
     const sanitizeUser =(user)=>({id: user.id, fullName: user.fullName, email: user.email,categories: JSON.parse(user.categories, [],), tagline: user.tagline, theme:user.theme, language: user.language, timezone: user.timezone, accountType:user.accountType, createdAt:user.createdAt,})
@@ -24,8 +28,9 @@ const signToken =(id)=>
         const passwordHash = await bcrypt.hash(password, 12);
         const user = await User.create({fullName, email,passwordHash});
         const token = signToken(user.id);
+        setAuthCookie(res,token);
         logger.info({userId: user.id}, 'New user signed up');
-        res.status(201).json({success: true, token, user:sanitizeUser(user)});
+        res.status(201).json({success: true, user:sanitizeUser(user)});
     });
     const login = catchAsync(async(req,res,next)=> {
         const email = String(req.body.email || '').trim().toLowerCase();
@@ -40,8 +45,9 @@ const signToken =(id)=>
             return next(new AppError('Invalid email or password.', 401));
         }
         const token = signToken(user.id);
+        setAuthCookie(res,token);
         logger.info({userId: user.id}, 'User logged in');
-        res.status(200).json({success: true, token, user:sanitizeUser(user)});
+        res.status(200).json({success: true, user:sanitizeUser(user)});
     });
     const updateMe = catchAsync(async(req,res)=>{
         const allowedFields = ['fullName', 'tagline', 'theme', 'language', 'timezone'];
@@ -114,4 +120,8 @@ const signToken =(id)=>
         await user.save();
         res.status(200).json({success: true, message:"Password changed successfully."});
     });
-module.exports ={signup, login,getMe, updateMe,changePassword, deleteMe, forgotPassword, resetPassword,};
+    const logout = catchAsync(async(req,res)=>{
+        res.clearCookie("notes_token", { httpOnly:true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax',path: '/'});
+        res.status(200).json({success: true,message: "Logged out successfully."});
+    });
+module.exports ={signup, login,getMe, updateMe,changePassword, deleteMe, forgotPassword, resetPassword,logout};

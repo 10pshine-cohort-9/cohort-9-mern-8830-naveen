@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import { ArrowLeft, Lock} from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
+import { changePassword } from '../api/auth';
 
 const ChangePassword = () => {
     const [currentPassword, setCurrentPassword] =useState('');
@@ -9,9 +10,10 @@ const ChangePassword = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] =useState('');
     const [success, setSuccess] = useState('');
+    const [submitting, setSubmitting] =useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit =(e) => {
+    const handleSubmit =async(e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
@@ -27,10 +29,20 @@ const ChangePassword = () => {
             setError("New password cannot be same as the current password");
             return;
         }
-        setSuccess('Password changed successfully');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
+        setSubmitting(true);
+        try{
+            await changePassword({currentPassword, newPassword});
+            setSuccess('Password changed successfully');
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        }
+        catch(err){
+            setError(err.response?.data?.message || 'Could not change password');
+        }
+        finally{
+            setSubmitting(false);
+        }
     };
     const handleCancel=()=>{
         setCurrentPassword('');
@@ -52,12 +64,12 @@ const ChangePassword = () => {
                         <label htmlFor='currentPassword' className='text-sm'>Current Password</label>
                         <input id = "currentPassword" name="currentPassword" type='password' autoComplete="current-password" placeholder='Current Password' value = {currentPassword} onChange={(e)=> setCurrentPassword(e.target.value)} required className='rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink'/>
                         <label htmlFor='newPassword' className='text-sm'>New Password</label>
-                        <input id ="newPassword" name="newPassword" autoComplete="new-password" type ='password' placeholder='New Password' value={newPassword} onChange={(e)=> setNewPassword(e.target.value)} required className='rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink'/>
+                        <input id ="newPassword" name="newPassword" autoComplete="new-password" type ='password' placeholder='New Password' minLength={8} value={newPassword} onChange={(e)=> setNewPassword(e.target.value)} required className='rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink'/>
                         <label htmlFor='confirmPassword' className='text-sm'>Confirm Password</label>
-                        <input id="confirmPassword" name="confirmPassword" autoComplete="new-password" type='password' placeholder='Confirm New Password' value ={confirmPassword} onChange={(e)=> setConfirmPassword(e.target.value)} required className='rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink'/>
+                        <input id="confirmPassword" name="confirmPassword" autoComplete="new-password" type='password' placeholder='Confirm New Password' minLength={8} value ={confirmPassword} onChange={(e)=> setConfirmPassword(e.target.value)} required className='rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink'/>
                     <div className='mt-1 flex gap-3'>
-                        <button type='button' onClick={handleCancel} className='flex-1 rounded-lg border border-black/10 py-2.5 text-sm hover:bg-sand'>Cancel</button>    
-                        <button type='submit' className='flex-1 rounded-lg bg-ink py-2.5 text-sm font-medium text-white hover:opacity-90'>Change Password</button>
+                        <button type='button' onClick={handleCancel} disabled={submitting} className='flex-1 rounded-lg border border-black/10 py-2.5 text-sm hover:bg-sand'>Cancel</button>
+                        <button type='submit' disabled={submitting} className='flex-1 rounded-lg bg-ink py-2.5 text-sm font-medium text-white hover:opacity-90'>{submitting? 'Changing...' : 'Change Password'}</button>
                     </div>
                     </form>
                 </div>
