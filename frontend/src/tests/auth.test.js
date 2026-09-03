@@ -11,21 +11,21 @@ describe("Auth API",()=>{
 
   describe("signup",()=>{
     test("signs up successfully",async()=>{
-      const payload = {name: "John",email: "john@example.com",password: "password123",};
+      const payload = {name: "Naveen",email: "naveen@example.com",password: "password123",};
       const data = {message: "Signup successful",
-        user: {name: "John",email: "john@example.com",},};
+        user: {name: "Naveen",email: "naveen@example.com",},};
       client.post.mockResolvedValueOnce({ data,});
       const result = await signup(payload);
       expect(client.post).toHaveBeenCalledWith("/auth/signup",payload);
       expect(result).toEqual(data);});
     test("throws API error when signup fails", async () => {
       client.post.mockRejectedValueOnce({response: {status: 400,data: {message: "Email already exists",},},});
-      await expect(signup({email: "john@example.com",password: "password123",})).rejects.toMatchObject({message: "Email already exists",status: 400,});});
+      await expect(signup({email: "naveen@example.com",password: "password123",})).rejects.toMatchObject({message: "Email already exists",status: 400,});});
   });
   describe("login", () => {
     test("logs in successfully",async()=>{
-      const payload = {email: "john@example.com",password: "password123",};
-      const data = {message: "Login successful",user:{email: "john@example.com",},};
+      const payload = {email: "naveen@example.com",password: "password123",};
+      const data = {message: "Login successful",user:{email: "naveen@example.com",},};
       client.post.mockResolvedValueOnce({data,});
       const result = await login(payload);
       expect(client.post).toHaveBeenCalledWith("/auth/login",payload);
@@ -33,11 +33,11 @@ describe("Auth API",()=>{
     });
     test("throws API error when login fails", async () => {
       client.post.mockRejectedValueOnce({response:{status: 401,data: {message: "Invalid credentials",},},});
-      await expect(login({email: "john@example.com",password: "wrong",})).rejects.toMatchObject({message: "Invalid credentials",status: 401,});});});
+      await expect(login({email: "naveen@example.com",password: "wrong",})).rejects.toMatchObject({message: "Invalid credentials",status: 401,});});});
 
   describe("getMe", () => {
     test("gets current user successfully", async () => {
-      const data = {_id: "123",name: "John",email: "john@example.com",};
+      const data = {_id: "123",name: "Naveen",email: "naveen@example.com",};
       client.get.mockResolvedValueOnce({data,});
       const result = await getMe();
       expect(client.get).toHaveBeenCalledWith("/auth/me");
@@ -98,7 +98,7 @@ describe("Auth API",()=>{
   });
   describe("forgotPassword",()=>{
     test("sends password reset request successfully", async () => {
-      const payload = {email: "john@example.com",};
+      const payload = {email: "naveen@example.com",};
       const data = {message: "Reset instructions sent",};
       client.post.mockResolvedValueOnce({data,});
       const result = await forgotPassword(payload);

@@ -1,12 +1,11 @@
-import React, { useEffect, useMemo, useRef,useState } from "react";
-import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,X, Trash2, Plus, AlertTriangle, ExternalLink} from "lucide-react";
+import React, {useEffect, useMemo, useRef,useState} from "react";
+import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Quote,Redo,Undo,MoreHorizontal,X, Trash2, Plus, AlertTriangle, ExternalLink} from "lucide-react";
 import '../editor.css';
 import Sidebar from "../components/Sidebar";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
 import Underline from "@tiptap/extension-underline";
 import {createNote, getNote, updateNote} from '../api/notes';
 import {useAuth} from '../context/AuthContext';
@@ -106,9 +105,7 @@ const NoteEditor=()=>{
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkError, setLinkError] = useState('');
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [imageUrl, setImageUrl] =useState('');
-  const [imageError, setImageError] =useState('');
+
 
   useEffect(() => {
   if (!id) {
@@ -171,7 +168,7 @@ const NoteEditor=()=>{
   setCategory(null);
 }, [id, searchParams, categories]);
 
-  const editor = useEditor({immediatelyRender: false, extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),Image,],
+  const editor = useEditor({immediatelyRender: false, extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),],
   content: "<p></p>",});
   useEffect(()=>{
     if(editor && existingNote){
@@ -302,34 +299,6 @@ const NoteEditor=()=>{
     setLinkError('');
   };
 
-
-  const insertImage = () => {
-    if (!editor) {
-        return;
-    }
-    setImageUrl('');
-    setImageError('');
-    setShowImageModal(true);
-  };
-  const handleInsertImage = ()=>{
-    const trimmedUrl = imageUrl.trim();
-    if(!trimmedUrl){
-      setImageError('Please enter an image URL.');
-      return;
-    }
-    try{
-      new URL(trimmedUrl);
-    }
-    catch{
-      setImageError("Please enter a valid image URL.");
-      return;
-    }
-    editor?.chain().focus().setImage({ src: trimmedUrl }).run();
-    setShowImageModal(false);
-    setImageUrl('');
-    setImageError('');
-  }
-
   const handleCancel=() =>{
     navigate("/notes");
   };
@@ -397,7 +366,6 @@ const NoteEditor=()=>{
           <ToolbarButton icon={ListOrdered} label="Numbered List" active={editor?.isActive("orderedList")}onClick={() => editor?.chain().focus().toggleOrderedList().run()} />
           <ToolbarButton icon={Quote} label="Quote" active={editor?.isActive("blockquote")}onClick={() => editor?.chain().focus().toggleBlockquote().run()} />
           <ToolbarButton icon={LinkIcon} label="Insert Link" onClick={insertLink}/>
-          <ToolbarButton icon={ImageIcon}label="Insert Image" onClick={insertImage}/>
           <span className="ml-auto flex items-center gap-1">
             <ToolbarButton icon={Undo} label="Undo"onClick={() => editor?.chain()?.focus()?.undo()?.run()}/>
             <ToolbarButton icon={Redo} label="Redo" onClick={() => editor?.chain()?.focus()?.redo()?.run()}/>
@@ -495,54 +463,7 @@ const NoteEditor=()=>{
           </div>
         </ModalOverlay>
       )}
-      {showImageModal && (
-        <ModalOverlay onClose={() => {
-            setShowImageModal(false);
-            setImageUrl("");
-            setImageError("");
-          }} titleId="insert-image-title">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 id="insert-image-title" className="text-lg font-semibold text-ink">Insert Image</h2>
-                <p className="mt-1 text-sm text-ink/50"> Paste the URL of an image. </p>
-              </div>
-              <button type="button" onClick={() => {
-                  setShowImageModal(false);
-                  setImageUrl("");
-                  setImageError("");
-                }}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /> </button>
-            </div>
-            <label htmlFor="image-url" className="mb-1.5 block text-sm font-medium text-ink/70">Image URL</label>
-            <input id="image-url" aria-label="Image URL" autoFocus value={imageUrl} onChange={(e) => {
-                setImageUrl(e.target.value);
-                setImageError("");
-              }}onKeyDown={(e) => {
-                if(e.key === "Enter"){
-                  handleInsertImage();
-                }
-                if(e.key === "Escape"){
-                  setShowImageModal(false);
-                  setImageUrl('');
-                  setImageError('');
-                }
-              }}placeholder="https://example.com/image.jpg"className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-clay"/>
-            {imageError && (
-              <p className="mt-2 text-sm text-red-600">{imageError}</p>
-            )}
-            <div className="mt-6 flex justify-end gap-2">
-              <button type="button"onClick={() => {
-                  setShowImageModal(false);
-                  setImageUrl("");
-                  setImageError("");
-                }}className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40">Cancel</button>
-              <button type="button"onClick={handleInsertImage}className="flex items-center gap-2 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"><ImageIcon size={15} />Insert Image</button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
     </div>
   );
 };
-
 export default NoteEditor;

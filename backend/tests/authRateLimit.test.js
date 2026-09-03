@@ -22,9 +22,9 @@ describe('authRateLimit middleware', () => {
         expect(next.calledOnce).to.equal(true);
     });
     it('should allow requests up to the maximum attempt limit',()=>{
-        const req = {ip: '127.0.0.2'};
-        const res = {};
-        const next = sinon.spy();
+        const req ={ip:'127.0.0.2'};
+        const res={};
+        const next= sinon.spy();
         for(let i = 0; i < 10; i++){
             authRateLimit(req, res, next);
         }

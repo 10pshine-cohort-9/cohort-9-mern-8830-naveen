@@ -81,7 +81,7 @@ describe('ResetPassword', ()=>{
         render(<ResetPassword />);
         fireEvent.change(screen.getByLabelText('New Password'),{target:{value: 'Password123',},});
         fireEvent.change(screen.getByLabelText('Confirm New Password'),{target:{value:'Password123',},});
-        fireEvent.click(screen.getByRole('button', {name: 'Reset Password', }) );
+        fireEvent.click(screen.getByRole('button', {name:'Reset Password', }) );
         expect(await screen.findByRole('alert')).toHaveTextContent('Could not reset your password. The link may have expired.');
     });
     it('disables the button and shows Resetting while the request is pending', async () => {

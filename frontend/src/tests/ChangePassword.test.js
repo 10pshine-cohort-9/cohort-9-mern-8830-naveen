@@ -75,8 +75,8 @@ describe('ChangePassword',()=>{
         expect(screen.getByLabelText('New Password') ).toHaveValue('');
         expect(screen.getByLabelText('Confirm Password')).toHaveValue('');
     });
-    it('shows the API error message when changing password fails', async () => {
-        changePassword.mockRejectedValue({response:{data:{ message: 'Current password is incorrect.', }, },});
+    it('shows the API error message when changing password fails',async ()=>{
+        changePassword.mockRejectedValue({response:{data:{message: 'Current password is incorrect.', }, },});
         render(<ChangePassword />);
         fillForm();
         fireEvent.click(screen.getByRole('button', {name:'Change Password',}));

@@ -5,7 +5,7 @@ import {updateMe,deleteAccount} from '../api/auth';
 const mockNavigate = jest.fn();
 const mockLogout = jest.fn();
 const mockSetUser = jest.fn();
-const mockUser ={fullName: 'John Doe',email: 'john@example.com', tagline: 'Notes enthusiast',createdAt: '2025-01-15T00:00:00.000Z',timezone: 'Asia/Karachi',accountType: 'Free',theme: 'Light',language: 'English',};
+const mockUser ={fullName: 'Naveen Fatima',email: 'naveen@example.com', tagline: 'Notes enthusiast',createdAt: '2025-01-15T00:00:00.000Z',timezone: 'Asia/Karachi',accountType: 'Free',theme: 'Light',language: 'English',};
 jest.mock('../api/auth');
 jest.mock('react-router-dom',()=> ({
     __esModule: true, useNavigate: () => mockNavigate,
@@ -27,8 +27,8 @@ describe('Profile', ()=>{
     it('renders profile information', ()=>{
         render(<Profile />);
         expect(screen.getByRole('heading',{name:'My Profile',})).toBeInTheDocument();
-        expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument();
-        expect(screen.getAllByText('john@example.com')[0]).toBeInTheDocument();
+        expect(screen.getAllByText('Naveen Fatima')[0]).toBeInTheDocument();
+        expect(screen.getAllByText('naveen@example.com')[0]).toBeInTheDocument();
         expect(screen.getByText('Notes enthusiast')).toBeInTheDocument();
         expect(screen.getByText('Asia/Karachi')).toBeInTheDocument();
         expect(screen.getByText('Free')).toBeInTheDocument();
@@ -47,11 +47,11 @@ describe('Profile', ()=>{
     it('enters edit mode',()=>{
         render(<Profile />);
         fireEvent.click(screen.getByRole('button', {name: /Edit Profile/i,}));
-        expect(screen.getByLabelText('Full Name')).toHaveValue('John Doe');
+        expect(screen.getByLabelText('Full Name')).toHaveValue('Naveen Fatima');
         expect(screen.getByLabelText('Tagline')).toHaveValue('Notes enthusiast');
         expect(screen.getByRole('button',{name:'Save',})).toBeInTheDocument();
     });
-    it('updates full name and tagline', async () => {
+    it('updates full name and tagline',async()=>{
         render(<Profile />);
         fireEvent.click(screen.getByRole('button',{name:/Edit Profile/i,}));
         fireEvent.change(screen.getByLabelText('Full Name'),{target: {value: 'Updated User',},});
@@ -60,7 +60,7 @@ describe('Profile', ()=>{
         await waitFor(() =>{
             expect(updateMe).toHaveBeenCalledWith({fullName: 'Updated User',tagline: 'Updated tagline',});
         });
-        expect(mockSetUser).toHaveBeenCalledWith(expect.objectContaining({fullName: 'Updated User',tagline: 'Updated tagline',}));
+        expect(mockSetUser).toHaveBeenCalledWith(expect.objectContaining({fullName:'Updated User',tagline:'Updated tagline',}));
     });
     it('shows validation error when full name is empty', async () => {
         render(<Profile />);
@@ -98,7 +98,7 @@ describe('Profile', ()=>{
         fireEvent.change(screen.getByLabelText('Full Name'),{target:{value: 'Changed Name',},});
         fireEvent.click(screen.getByRole('button',{name:'Cancel',}));
         expect(screen.queryByLabelText('Full Name')).not.toBeInTheDocument();
-        expect(screen.getAllByText('John Doe')[0]).toBeInTheDocument();
+        expect(screen.getAllByText('Naveen Fatima')[0]).toBeInTheDocument();
     });
     it('logs out the user and navigates to login', () =>{
         render(<Profile/>);

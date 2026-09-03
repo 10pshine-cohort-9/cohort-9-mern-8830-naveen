@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import * as authApi from "../api/auth";
 jest.mock("../api/auth");
-const mockUser = {id: 1, name: "John Doe", email: "john@example.com",};
+const mockUser = {id: 1, name: "Naveen Fatima", email: "naveen@example.com",};
 let refreshUser;
 const TestComponent = () => {
   const {user, loading,authError, signup,login, logout, refreshUser:contextRefreshUser,setUser, }=useAuth();
@@ -13,8 +13,8 @@ const TestComponent = () => {
       <div data-testid="user"> {user? JSON.stringify(user) :"No user"}</div>
       <div data-testid="loading">{loading ? "loading" : "loaded"}</div>
       <div data-testid="error"> {authError ? authError.message : "No error"}</div>
-      <button onClick={() =>signup({name: "John Doe",email: "john@example.com",password: "password",})}>Signup</button>
-      <button onClick={() => login({email: "john@example.com",password: "password",}) }>Login</button>
+      <button onClick={() =>signup({name: "Naveen Fatima",email: "naveen@example.com",password: "password",})}>Signup</button>
+      <button onClick={() => login({email: "naveen@example.com",password: "password",}) }>Login</button>
       <button onClick={() => logout()}>Logout</button>
       <button onClick={()=>refreshUser()}>Refresh User</button>
       <button onClick={() => setUser({ id: 99, name: "Changed User" })}>Set User</button>
@@ -49,7 +49,7 @@ describe("AuthContext",()=>{
       expect(screen.getByTestId("error")).toHaveTextContent("No error");
     });
     it("sets user to null when getMe returns 403", async () => {
-      const error = {response: { status: 403,}, };
+      const error = {response: { status: 403,},};
       authApi.getMe.mockRejectedValue(error);
       renderAuth();
       await waitFor(() => {
@@ -81,7 +81,7 @@ describe("AuthContext",()=>{
       await waitFor(()=>{
         expect(screen.getByTestId("user")).toHaveTextContent(JSON.stringify(mockUser));
       });
-      expect(authApi.signup).toHaveBeenCalledWith({name: "John Doe", email: "john@example.com",password: "password",});});
+      expect(authApi.signup).toHaveBeenCalledWith({name: "Naveen Fatima", email: "naveen@example.com",password: "password",});});
     it("propagates signup errors",async()=>{
       const error= new Error("Signup failed");
       authApi.signup.mockRejectedValue(error);
@@ -90,7 +90,7 @@ describe("AuthContext",()=>{
         expect(authApi.getMe).toHaveBeenCalled();
       });
       await expect(
-        authApi.signup({email: "john@example.com",password: "password",})).rejects.toThrow("Signup failed");});});
+        authApi.signup({email: "naveen@example.com",password: "password",})).rejects.toThrow("Signup failed");});});
   describe("login", () => {
     it("calls login API, sets the user and returns the response", async () => {
       const response={user: mockUser,token: "login-token",};
@@ -103,7 +103,7 @@ describe("AuthContext",()=>{
       await waitFor(()=>{
         expect(screen.getByTestId("user")).toHaveTextContent(JSON.stringify(mockUser));
       });
-      expect(authApi.login).toHaveBeenCalledWith({ email: "john@example.com",password: "password", });
+      expect(authApi.login).toHaveBeenCalledWith({email: "naveen@example.com",password: "password", });
     });
     it("propagates login errors", async()=>{
       const error = new Error("Invalid credentials");
@@ -113,7 +113,7 @@ describe("AuthContext",()=>{
         expect(authApi.getMe).toHaveBeenCalled();
       });
       await expect(
-        authApi.login({ email: "john@example.com",password: "wrong",}) ).rejects.toThrow("Invalid credentials");});
+        authApi.login({email: "naveen@example.com",password: "wrong",}) ).rejects.toThrow("Invalid credentials");});
   });
   describe("logout",()=>{
     it("calls logout API and clears the user",async()=> {
@@ -198,16 +198,10 @@ describe("AuthContext",()=>{
         expect(screen.getByTestId("user")).toHaveTextContent("No user");
       });
     });
-    it("logs out when refreshUser returns 403", async () => {
+    it("logs out when refreshUser returns 403", async()=>{
       authApi.getMe
-        .mockResolvedValueOnce({
-          user: mockUser,
-        })
-        .mockRejectedValueOnce({
-          response: {
-            status: 403,
-          },
-        });
+        .mockResolvedValueOnce({user: mockUser, })
+        .mockRejectedValueOnce({response:{status: 403,},});
       authApi.logout.mockResolvedValue({});
       renderAuth();
       await waitFor(()=>{
@@ -286,37 +280,21 @@ describe("AuthContext",()=>{
       const consoleError = jest
         .spyOn(console, "error")
         .mockImplementation(() => {});
-
-      expect(() => {
-        render(<TestComponent />);
-      }).toThrow("useAuth must be used within an AuthProvider");
-
+      expect(() => {render(<TestComponent/>);}).toThrow("useAuth must be used within an AuthProvider");
       consoleError.mockRestore();
     });
   });
-
   describe("event listener cleanup", () => {
-    it("removes the unauthorized event listener when unmounted", async () => {
-      authApi.getMe.mockResolvedValue({
-        user: mockUser,
-      });
-
+    it("removes the unauthorized event listener when unmounted",async()=>{
+      authApi.getMe.mockResolvedValue({user: mockUser,});
       authApi.logout.mockResolvedValue({});
-
-      const { unmount } = renderAuth();
-
-      await waitFor(() => {
-        expect(screen.getByTestId("user")).toHaveTextContent(
-          JSON.stringify(mockUser)
-        );
+      const {unmount} = renderAuth();
+      await waitFor(() =>{
+        expect(screen.getByTestId("user")).toHaveTextContent(JSON.stringify(mockUser));
       });
-
       unmount();
-
       window.dispatchEvent(new Event("auth:unauthorized"));
-
       await new Promise((resolve) => setTimeout(resolve, 0));
-
       expect(authApi.logout).not.toHaveBeenCalled();
     });
   });

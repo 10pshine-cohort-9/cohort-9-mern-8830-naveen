@@ -59,7 +59,7 @@ const renderDashboard= (initialEntry = '/notes')=>{
     );
 };
 const setupAuth =(overrides = {}) => {
-    const auth ={user:{ fullName: 'Test User',categories: ['Work', 'Ideas'],},refreshUser: jest.fn(),...overrides,
+    const auth ={user:{fullName: 'Test User',categories: ['Work', 'Ideas'],},refreshUser: jest.fn(),...overrides,
     };
     useAuth.mockReturnValue(auth);
     return auth;
@@ -92,7 +92,7 @@ describe('Dashboard', () => {
         it('renders notes returned by the API', async()=>{
             renderDashboard();
             await waitFor(()=>{
-                expect(screen.getByText('First Note')).toBeInTheDocument();});
+            expect(screen.getByText('First Note')).toBeInTheDocument();});
             expect(screen.getByText('Favourite Note')).toBeInTheDocument();
             expect(getNotes).toHaveBeenCalledWith({category: undefined,favourite: undefined,archived: undefined,trashed: undefined,search: undefined,});
         });
@@ -452,7 +452,7 @@ describe('Dashboard', () => {
             await waitFor(()=> {
                 expect(screen.getByText('First Note')).toBeInTheDocument();
             });
-            fireEvent.click(screen.getByRole('button', {name: 'Delete Work',}));
+            fireEvent.click(screen.getByRole('button',{name:'Delete Work',}));
             await waitFor(()=> {
                 expect(screen.getByText('Could not delete category.')).toBeInTheDocument();
             });
