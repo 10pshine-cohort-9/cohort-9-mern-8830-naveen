@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef,useState } from "react";
 import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,X, Trash2, Plus, AlertTriangle, ExternalLink} from "lucide-react";
 import '../editor.css';
 import Sidebar from "../components/Sidebar";
@@ -18,15 +18,72 @@ const ToolbarButton = ({ icon: Icon, label, onClick, active }) => (
     <Icon size={15} />
   </button>
 );
-const ModalOverlay = ({children, onClose}) => {
-  return(
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <button type="button" aria-label="Close modal" className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose}/>
-      <div className="relative z-10">{children}</div>
+const ModalOverlay = ({ children, onClose, titleId }) => {
+  const overlayRef = useRef(null);
+  const dialogRef = useRef(null);
+  const previousActiveElement = useRef(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    previousActiveElement.current = document.activeElement;
+    const overlay = overlayRef.current;
+    const dialog = dialogRef.current;
+    if(!overlay || !dialog){
+      return undefined;
+    }
+    const parent = overlay.parentElement;
+    const siblings = parent? Array.from(parent.children).filter((child) => child !== overlay): [];
+    siblings.forEach((sibling) => sibling.setAttribute("inert", ""));
+    const getFocusableElements = () =>
+      Array.from(dialog.querySelectorAll(['button:not([disabled])', 'input:not([disabled])','select:not([disabled])','textarea:not([disabled])','a[href]','[tabindex]:not([tabindex="-1"])',].join(",")));
+    const firstFocusableElement = getFocusableElements()[0];
+    firstFocusableElement?.focus();
+    const handleKeyDown = (event) => {
+      if(event.key === "Escape"){
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if(event.key !== "Tab"){
+        return;
+      }
+      const focusableElements = getFocusableElements();
+      if (!focusableElements.length){
+        event.preventDefault();
+        return;
+      }
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if(event.shiftKey &&document.activeElement === firstElement){
+        event.preventDefault();
+        lastElement.focus();
+      }
+      else if(!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return()=>{
+      document.removeEventListener("keydown", handleKeyDown);
+      siblings.forEach((sibling) => {sibling.removeAttribute("inert");});
+      if(previousActiveElement.current instanceof HTMLElement){
+        previousActiveElement.current.focus();
+      }
+    };
+  }, []);
+  return (
+    <div ref={overlayRef} className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <button type="button" aria-label="Close modal" className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"onClick={onClose}/>
+      <div ref={dialogRef} role="dialog" aria-modal="true"aria-labelledby={titleId} className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 };
-const NoteEditor = () => {
+const NoteEditor=()=>{
   const {user, refreshUser} = useAuth();
   const {id} =useParams();
   const navigate = useNavigate();
@@ -352,11 +409,11 @@ const NoteEditor = () => {
         <p className="mt-3 text-xs text-ink/40">{words} words • {chars} characters</p>
       </main>
       {showCategoryModal && (
-        <ModalOverlay onClose={()=>{if(!categorySaving){setShowCategoryModal(false);}}}>
+        <ModalOverlay onClose={()=>{if(!categorySaving){setShowCategoryModal(false);}}} titleId="new-category-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-ink">New Category</h2>
+                <h2 id="new-category-title" className="text-lg font-semibold text-ink">New Category</h2>
                 <p className="mt-1 text-sm text-ink/50">Create a category for your notes.</p>
               </div>
               <button type="button" disabled={categorySaving} onClick={()=>setShowCategoryModal(false)} className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink disabled:opacity-50"><X size={18}/></button>
@@ -377,12 +434,12 @@ const NoteEditor = () => {
         <ModalOverlay onClose={() => {if (!categoryDeleting) {
               setShowDeleteCategoryModal(false);
               setCategoryToDelete(null);
-            }}}>
+            }}} titleId="delete-category-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600"><AlertTriangle size={20}/></div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-ink">Delete Category?</h2>
+                <h2 id="delete-category-title" className="text-lg font-semibold text-ink">Delete Category?</h2>
                 <p className="mt-2 text-sm leading-6 text-ink/60">Are you sure you want to delete{" "}<span className="font-medium text-ink">"{categoryToDelete}"</span> ? This category will be removed from your category list.</p>
               </div>
               <button type="button" disabled={categoryDeleting} onClick={()=> {
@@ -400,11 +457,11 @@ const NoteEditor = () => {
         </ModalOverlay>
       )}
       {showLinkModal && (
-        <ModalOverlay onClose={() => {setShowLinkModal(false);setLinkUrl("");setLinkError("");}}>
+        <ModalOverlay onClose={() => {setShowLinkModal(false);setLinkUrl("");setLinkError("");}} titleId="insert-link-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-ink">Insert Link</h2>
+                <h2 id="insert-link-title" className="text-lg font-semibold text-ink">Insert Link</h2>
                 <p className="mt-1 text-sm text-ink/50">Enter the URL you want to link to.</p>
               </div>
               <button type="button" onClick={() => { setShowLinkModal(false); setLinkUrl(""); setLinkError("");}}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /></button>
@@ -443,11 +500,11 @@ const NoteEditor = () => {
             setShowImageModal(false);
             setImageUrl("");
             setImageError("");
-          }}>
+          }} titleId="insert-image-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-ink">Insert Image</h2>
+                <h2 id="insert-image-title" className="text-lg font-semibold text-ink">Insert Image</h2>
                 <p className="mt-1 text-sm text-ink/50"> Paste the URL of an image. </p>
               </div>
               <button type="button" onClick={() => {

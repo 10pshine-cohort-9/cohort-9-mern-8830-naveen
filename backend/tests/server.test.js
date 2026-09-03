@@ -109,13 +109,20 @@ describe('server.js', () => {
         }),
       };
     });
-    sequelize.close.callsFake(async()=>{
+    sequelize.close.callsFake(()=>{
       serverClosedBeforeDbClose = serverClosed;
   });
     loadServer();
     await new Promise((resolve) => setImmediate(resolve));
     const rejectionError = new Error('Server failure');
-    await unhandledRejectionHandler(rejectionError);
+    let handleError = null;
+    try{
+      await unhandledRejectionHandler(rejectionError);
+    }
+    catch(error){
+      handleError = error;
+    }
+    expect(handleError).to.equal(null);
     expect(serverClosedBeforeDbClose).to.equal(true);
     expect(sequelize.close.calledOnce).to.equal(true);
     expect(processExitStub.calledWith(1)).to.equal(true);
