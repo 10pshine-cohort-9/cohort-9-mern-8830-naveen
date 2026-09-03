@@ -86,8 +86,8 @@ const signToken =(id)=>
         res.status(200).json({success:true, message:"Account deleted successfully."});
     });
     const forgotPassword =catchAsync(async(req,res,next)=>{
-        const email=String(req.body.email || '').trim().toLowerCase();
-        const user = await User.findOne({where:{email}});
+        const userEmail=String(req.body.email || '').trim().toLowerCase();
+        const user = await User.findOne({where:{email:userEmail}});
         const response ={
             success: true, message:"If an account exists for that email, a password reset token has been generated"
         };
