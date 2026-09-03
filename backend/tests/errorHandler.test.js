@@ -28,11 +28,20 @@ it('should return a generic message for a non-operational error', () => {
 });
 it('should include the stack in development for a non-operational error', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
-    const err ={statusCode: 500,isOperational: false,message: 'Unexpected failure', stack: 'Error: Unexpected failure\n    at test'};
-    errorHandler(err,{method:'POST', originalUrl: '/api/test' },res,sinon.spy());
-    expect(json.calledWith({success: false,message: 'Something went wrong. Please try again later.',stack: err.stack})).to.equal(true);
-    process.env.NODE_ENV = originalEnv;
+    try{
+        process.env.NODE_ENV = 'development';
+        const err ={statusCode: 500,isOperational: false,message: 'Unexpected failure', stack: 'Error: Unexpected failure\n    at test'};
+        errorHandler(err,{method:'POST', originalUrl: '/api/test' },res,sinon.spy());
+        expect(json.calledWith({success: false,message: 'Something went wrong. Please try again later.',stack: err.stack})).to.equal(true);
+    }
+    finally{
+        if(originalEnv === undefined){
+            delete process.env.NODE_ENV;
+        }
+        else{
+            process.env.NODE_ENV = originalEnv;
+        }
+    }
 });
 it('should use default status code 500 when statusCode is missing', () => {
     const err = {message: 'Unknown error'};

@@ -298,7 +298,7 @@ const NoteEditor = () => {
           </button>
           <div className="flex items-center gap-3">
             <button type="button" aria-label='Cancel note' onClick={handleCancel} className="rounded-lg border border-black/10 px-4 py-1.5 text-sm hover:bg-sand/40">Cancel</button>
-            <button type="button" onClick={handleSaveNow} disabled={saving} className="rounded-lg bg-clay px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">{saving?'Saving...':'Save Note'}</button>
+            <button type="button" onClick={handleSaveNow} disabled={saving || !editor} className="rounded-lg bg-clay px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">{saving?'Saving...':'Save Note'}</button>
             <button type="button" aria-label="More options" className="text-ink/40 hover:text-ink/70"><MoreHorizontal size={18} /></button>
           </div>
         </div>

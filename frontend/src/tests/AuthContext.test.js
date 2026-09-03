@@ -4,8 +4,10 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 import * as authApi from "../api/auth";
 jest.mock("../api/auth");
 const mockUser = {id: 1, name: "John Doe", email: "john@example.com",};
+let refreshUser;
 const TestComponent = () => {
-  const {user, loading,authError, signup,login, logout, refreshUser,setUser, }=useAuth();
+  const {user, loading,authError, signup,login, logout, refreshUser:contextRefreshUser,setUser, }=useAuth();
+  refreshUser = contextRefreshUser;
   return (
     <div>
       <div data-testid="user"> {user? JSON.stringify(user) :"No user"}</div>
@@ -14,7 +16,7 @@ const TestComponent = () => {
       <button onClick={() =>signup({name: "John Doe",email: "john@example.com",password: "password",})}>Signup</button>
       <button onClick={() => login({email: "john@example.com",password: "password",}) }>Login</button>
       <button onClick={() => logout()}>Logout</button>
-      <button onClick={async()=>{try{await refreshUser();} catch (err) { }}}>Refresh User</button>
+      <button onClick={()=>refreshUser()}>Refresh User</button>
       <button onClick={() => setUser({ id: 99, name: "Changed User" })}>Set User</button>
     </div>
   );
@@ -186,7 +188,9 @@ describe("AuthContext",()=>{
       await waitFor(()=> {
         expect(screen.getByTestId("user")).toHaveTextContent(JSON.stringify(mockUser));
       });
-      fireEvent.click(screen.getByText("Refresh User"));
+      await expect(refreshUser()).rejects.toMatchObject({
+        response: { status: 401 },
+      });
       await waitFor(() => {
         expect(authApi.logout).toHaveBeenCalledTimes(1);
       });
@@ -209,11 +213,13 @@ describe("AuthContext",()=>{
       await waitFor(()=>{
         expect(screen.getByTestId("user")).toHaveTextContent(JSON.stringify(mockUser));
       });
-      fireEvent.click(screen.getByText("Refresh User"));
+      await expect(refreshUser()).rejects.toMatchObject({response: { status: 403 },});
       await waitFor(()=>{
         expect(authApi.logout).toHaveBeenCalledTimes(1);
       });
-      expect(screen.getByTestId("user")).toHaveTextContent("No user");
+      await waitFor(()=>{
+        expect(screen.getByTestId("user")).toHaveTextContent("No user");
+      })
     });
     it("rethrows non-authentication errors", async()=>{
       const error = new Error("Refresh failed");
@@ -223,9 +229,9 @@ describe("AuthContext",()=>{
       await waitFor(()=>{
         expect(screen.getByTestId("user")).toHaveTextContent(JSON.stringify(mockUser));
       });
-      fireEvent.click(screen.getByText("Refresh User"));
-      await waitFor(() => {
-        expect(authApi.getMe).toHaveBeenCalledTimes(2); });});
+      await expect(refreshUser()).rejects.toThrow("Refresh failed");
+      expect(authApi.getMe).toHaveBeenCalledTimes(2);
+    });
   });
   describe("unauthorized event", () => {
     it("logs out when auth:unauthorized event is dispatched", async () => {

@@ -1,4 +1,4 @@
-# Notes App — MERN Stack
+# Notes App
 
 A full-stack notes-taking application with user authentication, email-based password reset, a rich-text note editor, categories, favourites, archiving, and a trash/soft-delete flow.
 
@@ -173,7 +173,11 @@ The backend expects a MySQL database matching `DB_NAME` in your `.env` to alread
 
 ## Frontend Setup
 
-From the project root:
+
+Go to the project root:
+```bash
+cd ..
+```
 
 ```bash
 cd frontend
@@ -297,11 +301,7 @@ Run these commands from `frontend/`:
 
 # API Reference
 
-All API endpoints are mounted under:
-
-```text
-/api
-```
+API endpoints are mounted under `/api`, except for the health endpoint, which is available at `/health`.
 
 Protected endpoints require a valid `notes_token` cookie or:
 
@@ -405,7 +405,7 @@ frontend/coverage/
 
 # Architecture Notes
 
-### Authentication Rate Limiting
+## Authentication Rate Limiting
 
 The authentication rate limiter is an in-memory, per-process, per-IP limiter.
 
@@ -450,13 +450,13 @@ frontend/src/api/client.js
 
 handles authentication errors globally.
 
-When a `401` response is received, it dispatches:
+When a \`401\` response is received, it dispatches a custom \`auth:unauthorized\` event on the \`window\` object:
 
-```text
-window auth:unauthorized
-```
+\`\`\`javascript
+window.dispatchEvent(new Event('auth:unauthorized'));
+\`\`\`
 
-The `AuthContext` listens for this event and logs the user out automatically when the session expires.
+The \`AuthContext\` listens for this event and logs the user out automatically when the session expires.
 
 The frontend also enforces HTTPS when running in production.
 

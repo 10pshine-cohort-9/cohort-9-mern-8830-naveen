@@ -97,6 +97,7 @@ describe('server.js', () => {
   });
   it('should close server before closing database during unhandled rejection', async () => {
     let serverClosed = false;
+    let serverClosedBeforeDbClose = null;
     app.listen.callsFake((port, callback) =>{
       if(callback){
         callback();
@@ -108,13 +109,14 @@ describe('server.js', () => {
         }),
       };
     });
-    sequelize.close.callsFake(async () => {
-      expect(serverClosed).to.equal(true);
-    });
+    sequelize.close.callsFake(async()=>{
+      serverClosedBeforeDbClose = serverClosed;
+  });
     loadServer();
     await new Promise((resolve) => setImmediate(resolve));
     const rejectionError = new Error('Server failure');
     await unhandledRejectionHandler(rejectionError);
+    expect(serverClosedBeforeDbClose).to.equal(true);
     expect(sequelize.close.calledOnce).to.equal(true);
     expect(processExitStub.calledWith(1)).to.equal(true);
   });

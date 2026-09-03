@@ -5,7 +5,7 @@ const mockNavigate = jest.fn();
 const mockSignup = jest.fn();
 jest.mock('react-router-dom',()=>({
     __esModule: true,
-    Link:({children, ...props})=>(<a {...props}>{children}</a>
+    Link:({to,children, ...props})=>(<a href={to}{...props}>{children}</a>
     ),useNavigate: () => mockNavigate,
 }));
 jest.mock('../context/AuthContext',()=>({
