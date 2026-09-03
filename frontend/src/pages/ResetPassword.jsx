@@ -5,9 +5,6 @@ import { resetPassword } from "../api/auth";
 
 const ResetPassword = () => {
     const [searchParams] = useSearchParams();
-
-    // Token is obtained internally from the reset link.
-    // The user does not need to see or enter it.
     const token = searchParams.get("token") || "";
 
     const [newPassword, setNewPassword] = useState("");

@@ -20,7 +20,10 @@ const ToolbarButton = ({ icon: Icon, label, onClick, active }) => (
 );
 const ModalOverlay = ({children, onClose}) => {
   return(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-[2px]" onMouseDown={(e)=>{if(e.target === e.currentTarget){onClose();}}}>{children}</div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <button type="button" aria-label="Close modal" className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose}/>
+      <div className="relative z-10">{children}</div>
+    </div>
   );
 };
 const NoteEditor = () => {
@@ -35,7 +38,7 @@ const NoteEditor = () => {
   const [error, setError] = useState('');
   const [title, setTitle] = useState('');
   const [favourite, setFavourite] = useState(false);
-  const [category, setCategory] = useState(null);
+  const [category, setCategory] = useState('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [categorySaving, setCategorySaving] = useState(false);
@@ -111,7 +114,7 @@ const NoteEditor = () => {
   setCategory(null);
 }, [id, searchParams, categories]);
 
-  const editor = useEditor({extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),Image,],
+  const editor = useEditor({immediatelyRender: false, extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),Image,],
   content: "<p></p>",});
   useEffect(()=>{
     if(editor && existingNote){
@@ -285,21 +288,17 @@ const NoteEditor = () => {
     );
   }
 
-  if (!editor) {
-    return null;
-  }
-
     return (
     <div className="flex min-h-screen bg-cream">
       <Sidebar categories={categories} onNewCategory={handleNewCategory} onDeleteCategory={handleDeleteCategory}/>
       <main className="flex-1 px-8 py-6">
         <div className="mb-4 flex items-center justify-between">
-          <button onClick={() => navigate("/notes")} className="flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink">
+          <button type="button" onClick={() => navigate("/notes")} className="flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink">
             <ArrowLeft size={15} />Back to all notes
           </button>
           <div className="flex items-center gap-3">
-            <button onClick={handleCancel} className="rounded-lg border border-black/10 px-4 py-1.5 text-sm hover:bg-sand/40">Cancel</button>
-            <button onClick={handleSaveNow} disabled={saving} className="rounded-lg bg-clay px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">{saving?'Saving...':'Save Note'}</button>
+            <button type="button" aria-label='Cancel note' onClick={handleCancel} className="rounded-lg border border-black/10 px-4 py-1.5 text-sm hover:bg-sand/40">Cancel</button>
+            <button type="button" onClick={handleSaveNow} disabled={saving} className="rounded-lg bg-clay px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">{saving?'Saving...':'Save Note'}</button>
             <button type="button" aria-label="More options" className="text-ink/40 hover:text-ink/70"><MoreHorizontal size={18} /></button>
           </div>
         </div>
@@ -309,7 +308,7 @@ const NoteEditor = () => {
         <div className="mb-4 flex items-center gap-3">
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Untitled Note"className="w-full bg-transparent text-2xl font-semibold outline-none placeholder:text-ink/30"/>
           <div className="mb-4">
-             <label htmlFor='category' className="mb-1 block text-sm font-medium text-ink/70">Category</label>
+             <label htmlFor='category' className="mb-1 block text-sm font-medium text-ink/70">category</label>
              <select id='category' value={category || ''} onChange={(e)=> {
               if(e.target.value === "__new__"){
                 handleNewCategory();
@@ -343,8 +342,8 @@ const NoteEditor = () => {
           <ToolbarButton icon={LinkIcon} label="Insert Link" onClick={insertLink}/>
           <ToolbarButton icon={ImageIcon}label="Insert Image" onClick={insertImage}/>
           <span className="ml-auto flex items-center gap-1">
-            <ToolbarButton icon={Undo} label="Undo"onClick={() => editor.chain().focus().undo().run()}/>
-            <ToolbarButton icon={Redo} label="Redo" onClick={() => editor.chain().focus().redo().run()}/>
+            <ToolbarButton icon={Undo} label="Undo"onClick={() => editor?.chain()?.focus()?.undo()?.run()}/>
+            <ToolbarButton icon={Redo} label="Redo" onClick={() => editor?.chain()?.focus()?.redo()?.run()}/>
           </span>
         </div>
         <div className="rounded-lg border border-black/10 bg-white p-4 min-h-[420px]">
@@ -411,7 +410,7 @@ const NoteEditor = () => {
               <button type="button" onClick={() => { setShowLinkModal(false); setLinkUrl(""); setLinkError("");}}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /></button>
             </div>
             <label htmlFor="link-url"className="mb-1.5 block text-sm font-medium text-ink/70">URL</label>
-            <input id="link-url" autoFocus value={linkUrl} onChange={(e) => {
+            <input id="link-url" aria-label="URL" autoFocus value={linkUrl} onChange={(e) => {
                 setLinkUrl(e.target.value);
                 setLinkError("");
               }}
@@ -458,7 +457,7 @@ const NoteEditor = () => {
                 }}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /> </button>
             </div>
             <label htmlFor="image-url" className="mb-1.5 block text-sm font-medium text-ink/70">Image URL</label>
-            <input id="image-url" autoFocus value={imageUrl} onChange={(e) => {
+            <input id="image-url" aria-label="Image URL" autoFocus value={imageUrl} onChange={(e) => {
                 setImageUrl(e.target.value);
                 setImageError("");
               }}onKeyDown={(e) => {

@@ -8,6 +8,7 @@ const notFound = require('./middleware/notFound');
 
 const cookieParser = require('cookie-parser');
 const app = express();
+app.disable('x-powered-by');
 app.use(
     cors({
         origin: process.env.CLIENT_URL || 'http://localhost:3000',

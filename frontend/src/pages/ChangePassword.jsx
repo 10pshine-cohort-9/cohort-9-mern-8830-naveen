@@ -55,11 +55,11 @@ const ChangePassword = () => {
         <div className= "flex min-h-screen bg-cream">
             <Sidebar/>
             <main className="flex-1 px-8 py-8">
-                <button onClick={()=> navigate('/profile')} className='mb-6 flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink'><ArrowLeft size={15}/>Back to Profile</button>
+                <button type='button' onClick={()=> navigate('/profile')} className='mb-6 flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink'><ArrowLeft size={15}/>Back to Profile</button>
                 <div className='mx-auto max-w-sm rounded-xl border border-black/5 bg-white p-6'>
                     <h2 className='mb-4 flex items-center gap-2 text-base font-semibold'><Lock size= {16}/>Change Password</h2>
                     {error && <p role="alert" className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
-                    {success && (<p role="status" aria-live="polite" className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">{success}</p>)}
+                    {success && (<p role="status" aria-live="polite" className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">Password changed successfully</p>)}
                     <form onSubmit={handleSubmit} className='flex flex-col gap-3'>
                         <label htmlFor='currentPassword' className='text-sm'>Current Password</label>
                         <input id = "currentPassword" name="currentPassword" type='password' autoComplete="current-password" placeholder='Current Password' value = {currentPassword} onChange={(e)=> setCurrentPassword(e.target.value)} required className='rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ink'/>

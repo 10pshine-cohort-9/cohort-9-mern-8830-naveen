@@ -5,7 +5,7 @@ const {User,Note,sequelize}= require('../models');
 const AppError = require('../utils/AppError');
 const catchAsync=require('../middleware/catchAsync');
 const logger=require('../config/logger');
-const {sendPasswordResetEmail} = require('../config/email');
+const email = require('../config/email');
 const { path } = require('../app');
 const setAuthCookie =(res, token)=>{
     res.cookie("notes_token", token, {httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000, path:'/'});
@@ -100,7 +100,7 @@ const signToken =(id)=>
         await user.save();
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
-        await sendPasswordResetEmail(user.email,resetUrl);
+        await email.sendPasswordResetEmail(user.email,resetUrl);
         logger.info({userId: user.id}, 'Password reset email sent.');
         res.status(200).json(response);
     });

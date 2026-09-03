@@ -17,7 +17,17 @@ const Dashboard = () =>{
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const selectedCat = searchParams.get('category');
-    const currentView = searchParams.get('favourite') === 'true' ? 'favourite' : searchParams.get('archived') ==='true'? 'archived' :searchParams.get('trashed')==='true'? 'trashed': '';
+    let currentView = '';
+
+    if (searchParams.get('favourite') === 'true') {
+        currentView = 'favourite';
+    } 
+    else if (searchParams.get('archived') === 'true') {
+        currentView = 'archived';
+    } 
+    else if (searchParams.get('trashed') === 'true') {
+    currentView = 'trashed';
+}    
     const canCreateNote = currentView === '';
     const isTrashView = currentView === 'trashed';
     const categories = user?.categories || [];
@@ -161,7 +171,7 @@ const Dashboard = () =>{
                             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search notes..." className="w-48 bg-transparent text-sm outline-none placeholder:text-ink/40"/>
                         </label>
                         {canCreateNote && (
-                            <button onClick={handleNewNote} className="flex items-center gap-1.5 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"> <Plus size={16}/>New Note </button>
+                            <button type='button' onClick={handleNewNote} className="flex items-center gap-1.5 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"> <Plus size={16}/>New Note </button>
                         )}
                     </div>
                 </div>
@@ -175,7 +185,7 @@ const Dashboard = () =>{
                         <p className='mb-1 text-sm font-medium text-ink/70'>{currentView === 'favourite' ? 'No favourite notes' : currentView === 'archived' ? 'No archived notes' : currentView === 'trashed' ? 'Trash is empty' : selectedCat? `No notes in ${selectedCat}`: 'No notes available'}</p>
                         <p className='mb-4 text-xs text-ink/40'>{currentView === 'favourite' ? 'Notes you mark as favourite will appear here' : currentView === 'archived' ? 'Notes you archive will appear here' : currentView === 'trashed' ? 'Deleted notes will appear here' : selectedCat? `Create a note in ${selectedCat} to get started.`: 'Create a note to get started.'}</p>
                         {canCreateNote && (
-                            <button onClick={handleNewNote} className ='flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white hover:opacity-90'><Plus size={16}/>Create Note</button>
+                            <button type='button' onClick={handleNewNote} className ='flex items-center gap-1.5 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white hover:opacity-90'><Plus size={16}/>Create Note</button>
                         )}
 
                     </div>
