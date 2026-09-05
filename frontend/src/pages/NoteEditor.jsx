@@ -1,12 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Image as ImageIcon,Quote,Redo,Undo,MoreHorizontal,X, Trash2, Plus, AlertTriangle, ExternalLink} from "lucide-react";
+import React, {useEffect, useMemo, useRef,useState} from "react";
+import {ArrowLeft,Star,Bold,Italic,Underline as underline_icon,Strikethrough,Code,List,ListOrdered,Link as LinkIcon,Quote,Redo,Undo,MoreHorizontal,X, Trash2, Plus, AlertTriangle, ExternalLink} from "lucide-react";
 import '../editor.css';
 import Sidebar from "../components/Sidebar";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
 import Underline from "@tiptap/extension-underline";
 import {createNote, getNote, updateNote} from '../api/notes';
 import {useAuth} from '../context/AuthContext';
@@ -18,12 +17,72 @@ const ToolbarButton = ({ icon: Icon, label, onClick, active }) => (
     <Icon size={15} />
   </button>
 );
-const ModalOverlay = ({children, onClose}) => {
-  return(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-[2px]" onMouseDown={(e)=>{if(e.target === e.currentTarget){onClose();}}}>{children}</div>
+const ModalOverlay = ({ children, onClose, titleId }) => {
+  const overlayRef = useRef(null);
+  const dialogRef = useRef(null);
+  const previousActiveElement = useRef(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    previousActiveElement.current = document.activeElement;
+    const overlay = overlayRef.current;
+    const dialog = dialogRef.current;
+    if(!overlay || !dialog){
+      return undefined;
+    }
+    const parent = overlay.parentElement;
+    const siblings = parent? Array.from(parent.children).filter((child) => child !== overlay): [];
+    siblings.forEach((sibling) => sibling.setAttribute("inert", ""));
+    const getFocusableElements = () =>
+      Array.from(dialog.querySelectorAll(['button:not([disabled])', 'input:not([disabled])','select:not([disabled])','textarea:not([disabled])','a[href]','[tabindex]:not([tabindex="-1"])',].join(",")));
+    const firstFocusableElement = getFocusableElements()[0];
+    firstFocusableElement?.focus();
+    const handleKeyDown = (event) => {
+      if(event.key === "Escape"){
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if(event.key !== "Tab"){
+        return;
+      }
+      const focusableElements = getFocusableElements();
+      if (!focusableElements.length){
+        event.preventDefault();
+        return;
+      }
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if(event.shiftKey &&document.activeElement === firstElement){
+        event.preventDefault();
+        lastElement.focus();
+      }
+      else if(!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return()=>{
+      document.removeEventListener("keydown", handleKeyDown);
+      siblings.forEach((sibling) => {sibling.removeAttribute("inert");});
+      if(previousActiveElement.current instanceof HTMLElement){
+        previousActiveElement.current.focus();
+      }
+    };
+  }, []);
+  return (
+    <div ref={overlayRef} className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <button type="button" aria-label="Close modal" className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"onClick={onClose}/>
+      <div ref={dialogRef} role="dialog" aria-modal="true"aria-labelledby={titleId} className="relative z-10">
+        {children}
+      </div>
+    </div>
   );
 };
-const NoteEditor = () => {
+const NoteEditor=()=>{
   const {user, refreshUser} = useAuth();
   const {id} =useParams();
   const navigate = useNavigate();
@@ -35,7 +94,7 @@ const NoteEditor = () => {
   const [error, setError] = useState('');
   const [title, setTitle] = useState('');
   const [favourite, setFavourite] = useState(false);
-  const [category, setCategory] = useState(null);
+  const [category, setCategory] = useState('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [categorySaving, setCategorySaving] = useState(false);
@@ -46,9 +105,7 @@ const NoteEditor = () => {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkError, setLinkError] = useState('');
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [imageUrl, setImageUrl] =useState('');
-  const [imageError, setImageError] =useState('');
+
 
   useEffect(() => {
   if (!id) {
@@ -111,7 +168,7 @@ const NoteEditor = () => {
   setCategory(null);
 }, [id, searchParams, categories]);
 
-  const editor = useEditor({extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),Image,],
+  const editor = useEditor({immediatelyRender: false, extensions:[ StarterKit,Underline,Link.configure({openOnClick: false}),],
   content: "<p></p>",});
   useEffect(()=>{
     if(editor && existingNote){
@@ -242,34 +299,6 @@ const NoteEditor = () => {
     setLinkError('');
   };
 
-
-  const insertImage = () => {
-    if (!editor) {
-        return;
-    }
-    setImageUrl('');
-    setImageError('');
-    setShowImageModal(true);
-  };
-  const handleInsertImage = ()=>{
-    const trimmedUrl = imageUrl.trim();
-    if(!trimmedUrl){
-      setImageError('Please enter an image URL.');
-      return;
-    }
-    try{
-      new URL(trimmedUrl);
-    }
-    catch{
-      setImageError("Please enter a valid image URL.");
-      return;
-    }
-    editor?.chain().focus().setImage({ src: trimmedUrl }).run();
-    setShowImageModal(false);
-    setImageUrl('');
-    setImageError('');
-  }
-
   const handleCancel=() =>{
     navigate("/notes");
   };
@@ -285,21 +314,17 @@ const NoteEditor = () => {
     );
   }
 
-  if (!editor) {
-    return null;
-  }
-
     return (
     <div className="flex min-h-screen bg-cream">
       <Sidebar categories={categories} onNewCategory={handleNewCategory} onDeleteCategory={handleDeleteCategory}/>
       <main className="flex-1 px-8 py-6">
         <div className="mb-4 flex items-center justify-between">
-          <button onClick={() => navigate("/notes")} className="flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink">
+          <button type="button" onClick={() => navigate("/notes")} className="flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink">
             <ArrowLeft size={15} />Back to all notes
           </button>
           <div className="flex items-center gap-3">
-            <button onClick={handleCancel} className="rounded-lg border border-black/10 px-4 py-1.5 text-sm hover:bg-sand/40">Cancel</button>
-            <button onClick={handleSaveNow} disabled={saving} className="rounded-lg bg-clay px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">{saving?'Saving...':'Save Note'}</button>
+            <button type="button" aria-label='Cancel note' onClick={handleCancel} className="rounded-lg border border-black/10 px-4 py-1.5 text-sm hover:bg-sand/40">Cancel</button>
+            <button type="button" onClick={handleSaveNow} disabled={saving || !editor} className="rounded-lg bg-clay px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">{saving?'Saving...':'Save Note'}</button>
             <button type="button" aria-label="More options" className="text-ink/40 hover:text-ink/70"><MoreHorizontal size={18} /></button>
           </div>
         </div>
@@ -309,7 +334,7 @@ const NoteEditor = () => {
         <div className="mb-4 flex items-center gap-3">
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Untitled Note"className="w-full bg-transparent text-2xl font-semibold outline-none placeholder:text-ink/30"/>
           <div className="mb-4">
-             <label htmlFor='category' className="mb-1 block text-sm font-medium text-ink/70">Category</label>
+             <label htmlFor='category' className="mb-1 block text-sm font-medium text-ink/70">category</label>
              <select id='category' value={category || ''} onChange={(e)=> {
               if(e.target.value === "__new__"){
                 handleNewCategory();
@@ -341,10 +366,9 @@ const NoteEditor = () => {
           <ToolbarButton icon={ListOrdered} label="Numbered List" active={editor?.isActive("orderedList")}onClick={() => editor?.chain().focus().toggleOrderedList().run()} />
           <ToolbarButton icon={Quote} label="Quote" active={editor?.isActive("blockquote")}onClick={() => editor?.chain().focus().toggleBlockquote().run()} />
           <ToolbarButton icon={LinkIcon} label="Insert Link" onClick={insertLink}/>
-          <ToolbarButton icon={ImageIcon}label="Insert Image" onClick={insertImage}/>
           <span className="ml-auto flex items-center gap-1">
-            <ToolbarButton icon={Undo} label="Undo"onClick={() => editor.chain().focus().undo().run()}/>
-            <ToolbarButton icon={Redo} label="Redo" onClick={() => editor.chain().focus().redo().run()}/>
+            <ToolbarButton icon={Undo} label="Undo"onClick={() => editor?.chain()?.focus()?.undo()?.run()}/>
+            <ToolbarButton icon={Redo} label="Redo" onClick={() => editor?.chain()?.focus()?.redo()?.run()}/>
           </span>
         </div>
         <div className="rounded-lg border border-black/10 bg-white p-4 min-h-[420px]">
@@ -353,11 +377,11 @@ const NoteEditor = () => {
         <p className="mt-3 text-xs text-ink/40">{words} words • {chars} characters</p>
       </main>
       {showCategoryModal && (
-        <ModalOverlay onClose={()=>{if(!categorySaving){setShowCategoryModal(false);}}}>
+        <ModalOverlay onClose={()=>{if(!categorySaving){setShowCategoryModal(false);}}} titleId="new-category-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-ink">New Category</h2>
+                <h2 id="new-category-title" className="text-lg font-semibold text-ink">New Category</h2>
                 <p className="mt-1 text-sm text-ink/50">Create a category for your notes.</p>
               </div>
               <button type="button" disabled={categorySaving} onClick={()=>setShowCategoryModal(false)} className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink disabled:opacity-50"><X size={18}/></button>
@@ -378,12 +402,12 @@ const NoteEditor = () => {
         <ModalOverlay onClose={() => {if (!categoryDeleting) {
               setShowDeleteCategoryModal(false);
               setCategoryToDelete(null);
-            }}}>
+            }}} titleId="delete-category-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600"><AlertTriangle size={20}/></div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-ink">Delete Category?</h2>
+                <h2 id="delete-category-title" className="text-lg font-semibold text-ink">Delete Category?</h2>
                 <p className="mt-2 text-sm leading-6 text-ink/60">Are you sure you want to delete{" "}<span className="font-medium text-ink">"{categoryToDelete}"</span> ? This category will be removed from your category list.</p>
               </div>
               <button type="button" disabled={categoryDeleting} onClick={()=> {
@@ -401,17 +425,17 @@ const NoteEditor = () => {
         </ModalOverlay>
       )}
       {showLinkModal && (
-        <ModalOverlay onClose={() => {setShowLinkModal(false);setLinkUrl("");setLinkError("");}}>
+        <ModalOverlay onClose={() => {setShowLinkModal(false);setLinkUrl("");setLinkError("");}} titleId="insert-link-title">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-ink">Insert Link</h2>
+                <h2 id="insert-link-title" className="text-lg font-semibold text-ink">Insert Link</h2>
                 <p className="mt-1 text-sm text-ink/50">Enter the URL you want to link to.</p>
               </div>
               <button type="button" onClick={() => { setShowLinkModal(false); setLinkUrl(""); setLinkError("");}}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /></button>
             </div>
             <label htmlFor="link-url"className="mb-1.5 block text-sm font-medium text-ink/70">URL</label>
-            <input id="link-url" autoFocus value={linkUrl} onChange={(e) => {
+            <input id="link-url" aria-label="URL" autoFocus value={linkUrl} onChange={(e) => {
                 setLinkUrl(e.target.value);
                 setLinkError("");
               }}
@@ -439,54 +463,7 @@ const NoteEditor = () => {
           </div>
         </ModalOverlay>
       )}
-      {showImageModal && (
-        <ModalOverlay onClose={() => {
-            setShowImageModal(false);
-            setImageUrl("");
-            setImageError("");
-          }}>
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-ink">Insert Image</h2>
-                <p className="mt-1 text-sm text-ink/50"> Paste the URL of an image. </p>
-              </div>
-              <button type="button" onClick={() => {
-                  setShowImageModal(false);
-                  setImageUrl("");
-                  setImageError("");
-                }}className="rounded-md p-1 text-ink/40 hover:bg-sand hover:text-ink"><X size={18} /> </button>
-            </div>
-            <label htmlFor="image-url" className="mb-1.5 block text-sm font-medium text-ink/70">Image URL</label>
-            <input id="image-url" autoFocus value={imageUrl} onChange={(e) => {
-                setImageUrl(e.target.value);
-                setImageError("");
-              }}onKeyDown={(e) => {
-                if(e.key === "Enter"){
-                  handleInsertImage();
-                }
-                if(e.key === "Escape"){
-                  setShowImageModal(false);
-                  setImageUrl('');
-                  setImageError('');
-                }
-              }}placeholder="https://example.com/image.jpg"className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-clay"/>
-            {imageError && (
-              <p className="mt-2 text-sm text-red-600">{imageError}</p>
-            )}
-            <div className="mt-6 flex justify-end gap-2">
-              <button type="button"onClick={() => {
-                  setShowImageModal(false);
-                  setImageUrl("");
-                  setImageError("");
-                }}className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40">Cancel</button>
-              <button type="button"onClick={handleInsertImage}className="flex items-center gap-2 rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:opacity-90"><ImageIcon size={15} />Insert Image</button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
     </div>
   );
 };
-
 export default NoteEditor;

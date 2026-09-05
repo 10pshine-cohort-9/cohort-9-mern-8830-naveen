@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {User, Mail, Lock, Feather, ArrowRight} from 'lucide-react';
 import {useAuth} from '../context/AuthContext';
 
@@ -74,10 +74,10 @@ const Signup = () => {
                     </label>
                     <label className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2.5">
                         <Lock size={20} className="text-ink/40" />
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required minLength={8} autoComplete='new-password' className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none" />
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required minLength={8} autoComplete='new-password' className="w-full bg-transparent text-sm placeholder:text-ink/50 focus:outline-none"/>
                     </label>
                     <label className="flex items-start gap-2 text-xs text-ink/60">
-                        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
+                        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />{' '}
                         I agree to the <span className="underline">Terms of Service</span> and <span className="underline">Privacy Policy</span>
                     </label>
 

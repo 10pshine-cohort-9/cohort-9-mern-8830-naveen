@@ -58,18 +58,18 @@ const Sidebar = ({categories = [], onNewCategory, onDeleteCategory}) => {
                     <div className="flex flex-col gap-1">
                         {categories.map((cat)=>(
                             <div key={cat} className='group flex items-center gap-1 eounded-lg'>
-                                <button onClick={()=>navigate(`/notes?${new URLSearchParams({category: cat})}`)} className={`flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors ${category === cat ? 'bg-sand text-ink font-medium': 'text-ink/70 hover:bg-sand/60'}`}>
+                                <button type='button' onClick={()=>navigate(`/notes?${new URLSearchParams({category: cat})}`)} className={`flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors ${category === cat ? 'bg-sand text-ink font-medium': 'text-ink/70 hover:bg-sand/60'}`}>
                                     <span className={`h-2 w-2 rounded-full ${CATEGORY_DOTS[cat] || 'bg-ink/30'}`}/>{cat}
                                 </button>
                                 <button type='button' onClick={()=> onDeleteCategory?.(cat)} aria-label={`Delete ${cat}`} className='hidden rounded-md px-2 py-1 text-xs text-red-400 hover:bg-red-50 hover:text-red-600 group-hover:block group-focus-within:block' title={`Delete ${cat}`}>x</button>
                                 </div>
                         ))}
-                        <button onClick={()=>onNewCategory?.()} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-clay hover:bg-sand/60"><Plus size={16}/> New Category</button>
+                        <button type='button' onClick={()=>onNewCategory?.()} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-clay hover:bg-sand/60"><Plus size={16}/> New Category</button>
                     </div>
                 </div>
             </div>
             <div className="relative">
-            <button onClick={() => setShowMenu(!showMenu)} className="flex w-full items-center gap-3 rounded-xl bg-sand/40 p-3 hover:bg-sand" >
+            <button type='button' onClick={() => setShowMenu(!showMenu)} className="flex w-full items-center gap-3 rounded-xl bg-sand/40 p-3 hover:bg-sand" >
                 <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(displayName)}`} alt={displayName} className="h-10 w-10 rounded-full border border-white bg-white"/>
                 <div className="flex-1 text-left">
                     <p className="truncate text-sm font-medium">{displayName}</p>
@@ -78,8 +78,8 @@ const Sidebar = ({categories = [], onNewCategory, onDeleteCategory}) => {
 
             {showMenu && (
                 <div className="absolute bottom-16 left-0 w-full overflow-hidden rounded-xl border border-black/10 bg-white shadow-lg">
-                    <button onClick={() => navigate("/profile")} className="flex w-full items-center gap-2 px-4 py-3 text-sm hover:bg-sand/50"><User size={16} />View Profile</button>
-                    <button onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50"><LogOut size={16} />Log Out</button>
+                    <button type='button' onClick={() => navigate("/profile")} className="flex w-full items-center gap-2 px-4 py-3 text-sm hover:bg-sand/50"><User size={16} />View Profile</button>
+                    <button type='button' onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50"><LogOut size={16} />Log Out</button>
                 </div>
             )}
             </div>

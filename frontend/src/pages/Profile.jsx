@@ -18,7 +18,7 @@ const InfoRow=({icon: Icon, label, value, badge})=>(
 );
 
 const PrefRow=({icon: Icon, label,value})=>(
-    <button className='flex w-full items-center justify-between py-2.5 text-left hover:opacity-80'>
+    <button type='button' className='flex w-full items-center justify-between py-2.5 text-left hover:opacity-80'>
         <span className='flex items-center gap-2.5 text-sm text-ink/60'>
         <Icon size={15}></Icon>{label}</span>
         <span className="flex items-center gap-1 text-sm text-ink/80">{value}<ChevronRight size={14} className='text-ink/30'/></span>
@@ -26,7 +26,7 @@ const PrefRow=({icon: Icon, label,value})=>(
 );
 
 const ActionRow=({icon:Icon, title, subtitle, onClick,danger})=> (
-    <button onClick={onClick} className={`flex w-full items-center justify-between rounded-lg px-2 py-2.5 text-left hover:bg-black/[0.02] ${danger? 'text-red-600 hover:bg-red-50' : 'text-ink/80'}`}>
+    <button type='button' onClick={onClick} className={`flex w-full items-center justify-between rounded-lg px-2 py-2.5 text-left hover:bg-black/[0.02] ${danger? 'text-red-600 hover:bg-red-50' : 'text-ink/80'}`}>
     <span className='flex items-start gap-2.5'>
         <Icon size={15} className='mt-0.5'/>
         <span>
@@ -128,11 +128,11 @@ const Profile = () => {
                     </div>
                     {editing ? (
                         <div className='flex gap-2'>
-                            <button onClick={handleCancel} disabled={saving} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand'>Cancel</button>
-                            <button onClick={handleSaveProfile} disabled={saving}className='rounded-lg bg-ink px-4 py-2 text-white hover:opacity-90'>{saving ? 'Saving...' : 'Save'}</button>
+                            <button type='button' onClick={handleCancel} disabled={saving} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand'>Cancel</button>
+                            <button type='button' onClick={handleSaveProfile} disabled={saving}className='rounded-lg bg-ink px-4 py-2 text-white hover:opacity-90'>{saving ? 'Saving...' : 'Save'}</button>
                         </div>
                     ):(
-                        <button onClick={()=>setEditing(true)} className='flex items-center gap-1.5 rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'><Pencil size={14}/>Edit Profile</button>)}
+                        <button type='button' onClick={()=>setEditing(true)} className='flex items-center gap-1.5 rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'><Pencil size={14}/>Edit Profile</button>)}
                 </div>
                 <div className='mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2'>
                     <div className='rounded-xl border border-black/5 bg-white p-5'>
@@ -169,8 +169,8 @@ const Profile = () => {
                                 <div className='mt-4 rounded-lg bg-red-50 p-4'>
                                     <p className='mb-3 text-sm text-red-600'>Are you sure you want to delete your account?</p>
                                     <div className='flex gap-3'>
-                                        <button onClick={handleDeleteAccount} className='rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700' disabled={saving}>{saving? 'Deleting...' : 'Delete'}</button>
-                                        <button onClick={handleCancel} disabled={saving} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'>Cancel</button>
+                                        <button type='button' onClick={handleDeleteAccount} className='rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700' disabled={saving}>{saving? 'Deleting...' : 'Delete'}</button>
+                                        <button type='button' onClick={handleCancel} disabled={saving} className='rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-sand/40'>Cancel</button>
                                     </div>
                                 </div>
                             )}

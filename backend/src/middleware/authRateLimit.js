@@ -25,4 +25,5 @@ const authRateLimit = (req,res,next)=>{
     }
     next();
 };
+authRateLimit.reset = () => { attempts.clear(); };
 module.exports = authRateLimit;

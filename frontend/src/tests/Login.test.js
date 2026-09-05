@@ -5,7 +5,7 @@ import Login from '../pages/Login';
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import client from '../api/client';
 jest.mock('../api/client');
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router-dom',()=>({
     __esModule: true,
     useNavigate: () => jest.fn(),
     Link: ({ children, ...props }) => <a {...props}>{children}</a>,
